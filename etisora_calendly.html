@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>etisora — AI Automation for Small & Medium Businesses</title>
+<meta name="description" content="etisora delivers intelligent chatbots, voice AI agents and powerful automation — purpose-built for small and medium businesses ready to grow.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9A84C;--gold2:#F0D080;--gold3:rgba(201,168,76,0.12);
+  --navy:#080C18;--navy2:#0F1525;--navy3:#172035;
+  --white:#F4F1EA;--muted:#7A8099;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;line-height:1.6}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes spinR{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.8)}}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes borderPulse{0%,100%{border-color:rgba(201,168,76,0.18)}50%{border-color:rgba(201,168,76,0.5)}}
+@keyframes waveBar{0%,100%{height:5px}50%{height:22px}}
+@keyframes lineGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity 0.65s ease,transform 0.65s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.08s}.d2{transition-delay:0.16s}.d3{transition-delay:0.24s}.d4{transition-delay:0.32s}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 5vw;
+  background:rgba(8,12,24,0.95);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(201,168,76,0.1);
+  animation:fadeIn 0.7s ease both;
+}
+.nav-logo{display:flex;align-items:center;gap:0.6rem;text-decoration:none}
+.nav-wordmark{display:flex;flex-direction:column;line-height:1}
+.nav-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:0.06em;color:var(--white)}
+.nav-sub{font-size:0.48rem;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:2px}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{font-size:0.75rem;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--gold)}
+.nav-btn{background:var(--gold);color:var(--navy);font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:0.5rem 1.2rem;border:none;border-radius:3px;cursor:pointer;transition:all 0.2s;text-decoration:none;white-space:nowrap}
+.nav-btn:hover{background:var(--gold2);transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6rem 2rem 3rem;position:relative;overflow:hidden}
+.hero-canvas{position:absolute;inset:0;pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:0.67rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:0.3rem 0.9rem;border-radius:100px;margin-bottom:1.8rem;animation:fadeUp 0.6s 0.2s ease both,borderPulse 3s 1s infinite;position:relative;z-index:2}
+.badge-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,6vw,4.8rem);font-weight:800;line-height:1.05;letter-spacing:-0.02em;margin-bottom:1.2rem;position:relative;z-index:2;animation:fadeUp 0.7s 0.3s ease both}
+.gold-text{color:var(--gold)}
+.hero-sub{font-size:0.98rem;color:var(--muted);max-width:560px;line-height:1.78;margin-bottom:2rem;position:relative;z-index:2;animation:fadeUp 0.7s 0.45s ease both}
+
+/* ETIS STRIP */
+.etis-strip{display:flex;gap:0;position:relative;z-index:2;margin-bottom:2.5rem;animation:fadeUp 0.7s 0.55s ease both;border:1px solid rgba(201,168,76,0.18);border-radius:6px;overflow:hidden}
+.etis-item{display:flex;flex-direction:column;align-items:center;padding:0.9rem 1.4rem;transition:background 0.3s;cursor:default}
+.etis-item:not(:last-child){border-right:1px solid rgba(201,168,76,0.12)}
+.etis-item:hover{background:rgba(201,168,76,0.07)}
+.etis-letter{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);line-height:1}
+.etis-word{font-size:0.58rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* BUTTONS */
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:2;animation:fadeUp 0.7s 0.65s ease both}
+.btn-gold{background:var(--gold);color:var(--navy);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:700;padding:0.85rem 2rem;border:none;border-radius:3px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;text-decoration:none;display:inline-block}
+.btn-gold::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.15);transform:translateX(-100%);transition:transform 0.3s}
+.btn-gold:hover::before{transform:translateX(0)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:500;padding:0.85rem 2rem;border:1px solid rgba(255,255,255,0.15);border-radius:3px;cursor:pointer;transition:all 0.25s;text-decoration:none;display:inline-block}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* STATS */
+.stats-row{display:flex;gap:3rem;margin-top:4rem;position:relative;z-index:2;flex-wrap:wrap;justify-content:center;animation:fadeUp 0.7s 0.8s ease both;border-top:1px solid rgba(255,255,255,0.06);padding-top:2.5rem}
+.stat-item{text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--gold);display:block}
+.stat-lbl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px}
+
+/* TICKER */
+.ticker-wrap{background:var(--gold);padding:0.85rem 0;overflow:hidden}
+.ticker{display:flex;gap:3rem;animation:ticker 26s linear infinite;white-space:nowrap}
+.ticker-item{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--navy);display:flex;align-items:center;gap:1.5rem}
+.ticker-item::after{content:'✦';font-size:0.5rem;opacity:0.5}
+
+/* SECTION STYLES */
+.sec{padding:5.5rem 5vw;max-width:1200px;margin:0 auto}
+.sec-tag{font-size:0.67rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:0.65rem;display:block}
+.sec-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:0.8rem}
+.sec-sub{color:var(--muted);font-size:0.92rem;line-height:1.78;max-width:520px;margin-bottom:3rem;font-weight:300}
+
+/* FOUNDATION */
+.foundation-bg{background:var(--navy)}
+.sora-callout{display:flex;align-items:flex-start;gap:1rem;margin-bottom:4rem;padding:1.25rem 1.5rem;border-left:2px solid var(--gold);background:rgba(201,168,76,0.04)}
+.sora-word{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--gold);white-space:nowrap;padding-top:2px}
+.sora-meaning{font-size:0.85rem;color:var(--muted);line-height:1.72}
+.sora-meaning strong{color:var(--white);font-weight:500}
+
+.pillars-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative;margin-bottom:5rem}
+.pillars-wrap::before{content:'';position:absolute;top:10%;left:33.33%;bottom:10%;width:1px;background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.2),transparent)}
+.pillars-wrap::after{content:'';position:absolute;top:10%;left:66.66%;bottom:10%;width:1px;background:linear-gradient(to bottom,transparent,rgba(201,168,76,0.2),transparent)}
+.pillar{padding:0 2.5rem 0 0}
+.pillar:nth-child(2){padding:0 2.5rem}
+.pillar:nth-child(3){padding:0 0 0 2.5rem}
+.pillar-num{font-size:0.62rem;font-weight:700;letter-spacing:0.14em;color:rgba(201,168,76,0.4);text-transform:uppercase;margin-bottom:0.9rem}
+.pillar-line{width:24px;height:2px;background:var(--gold);margin-bottom:1.1rem;transform-origin:left;animation:lineGrow 0.5s ease both}
+.pillar-ico{width:30px;height:30px;margin-bottom:1rem}
+.pillar-ico svg{width:30px;height:30px;stroke:var(--gold);fill:none;stroke-width:1.3}
+.pillar-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:0.55rem}
+.pillar-desc{font-size:0.83rem;color:var(--muted);line-height:1.75}
+
+.promise-wrap{border-top:1px solid rgba(201,168,76,0.1);padding-top:4rem}
+.promise-label{font-size:0.67rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem}
+.promise-headline{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;line-height:1.15;margin-bottom:3rem}
+.promise-headline span{color:var(--gold)}
+
+.etisora-letters{display:flex;flex-direction:column}
+.letter-row{display:grid;grid-template-columns:64px 1fr;align-items:baseline;padding:1.4rem 0;border-bottom:1px solid rgba(255,255,255,0.05);position:relative;transition:all 0.3s;cursor:default}
+.letter-row:first-child{border-top:1px solid rgba(255,255,255,0.05)}
+.letter-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(201,168,76,0.04);transition:width 0.4s ease}
+.letter-row:hover::before{width:100%}
+.letter-char{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--gold);line-height:1;position:relative;z-index:1;transition:color 0.3s}
+.letter-row:hover .letter-char{color:var(--gold2)}
+.letter-content{position:relative;z-index:1}
+.letter-word{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.2rem}
+.letter-desc{font-size:0.82rem;color:var(--muted);line-height:1.68}
+.sora-tag{display:inline-flex;align-items:center;gap:0.35rem;margin-top:0.4rem;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5A3F10;background:rgba(201,168,76,0.15);padding:0.2rem 0.6rem;border-radius:100px}
+
+/* AGENTS */
+.agents-bg{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.08)}
+.agents-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
+.agents-headline{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:1rem}
+.agents-body{font-size:0.9rem;color:var(--muted);line-height:1.78;margin-bottom:1.5rem;max-width:440px;font-weight:300}
+.agents-subline{font-size:0.88rem;color:var(--white);font-weight:500;line-height:1.65;margin-bottom:2rem;padding-left:1rem;border-left:2px solid var(--gold)}
+.agent-cards{display:flex;flex-direction:column;gap:1rem}
+.agent-card{display:flex;gap:1.1rem;align-items:flex-start;padding:1.4rem;border:1px solid rgba(255,255,255,0.06);border-radius:8px;transition:border-color 0.3s,transform 0.3s;cursor:default}
+.agent-card:hover{border-color:rgba(201,168,76,0.28);transform:translateX(4px)}
+.agent-ico{width:38px;height:38px;min-width:38px;background:rgba(201,168,76,0.08);border-radius:7px;display:flex;align-items:center;justify-content:center;transition:background 0.3s}
+.agent-card:hover .agent-ico{background:rgba(201,168,76,0.18)}
+.agent-ico svg{width:17px;height:17px;stroke:var(--gold);fill:none;stroke-width:1.5}
+.agent-title{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;margin-bottom:0.25rem}
+.agent-desc{font-size:0.78rem;color:var(--muted);line-height:1.6}
+.agent-tag{display:inline-block;font-size:0.58rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5A3F10;background:rgba(201,168,76,0.15);padding:0.18rem 0.5rem;border-radius:100px;margin-top:0.35rem}
+.no-code-box{display:flex;align-items:center;gap:0.85rem;padding:1rem 1.25rem;border:1px solid rgba(201,168,76,0.2);border-radius:6px;margin-top:1.5rem;animation:borderPulse 3s infinite}
+.nc-icon{width:34px;height:34px;min-width:34px;background:rgba(201,168,76,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.nc-icon svg{width:15px;height:15px;stroke:var(--gold);fill:none;stroke-width:1.5}
+.nc-text{font-size:0.78rem;color:var(--muted);line-height:1.55}
+.nc-text strong{color:var(--white);font-weight:500}
+
+/* SERVICES */
+.svc-bg{background:var(--navy);border-top:1px solid rgba(201,168,76,0.07)}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.08)}
+.svc-card{background:var(--navy);padding:2.25rem;transition:background 0.3s;position:relative;overflow:hidden;cursor:default}
+.svc-card:hover{background:var(--navy2)}
+.svc-card:hover .svc-ico svg{stroke:var(--gold2)}
+.svc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.4s}
+.svc-card:hover::before{transform:scaleX(1)}
+.svc-ico{margin-bottom:1.1rem;width:36px;height:36px;background:rgba(201,168,76,0.08);border-radius:7px;display:flex;align-items:center;justify-content:center;transition:background 0.3s}
+.svc-card:hover .svc-ico{background:rgba(201,168,76,0.18)}
+.svc-ico svg{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:1.5;transition:stroke 0.3s}
+.svc-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:0.6rem;letter-spacing:-0.01em}
+.svc-card p{font-size:0.82rem;color:var(--muted);line-height:1.72;font-weight:300}
+.svc-tag{display:inline-block;margin-top:1.25rem;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);font-weight:600;border-bottom:1px solid rgba(201,168,76,0.4);padding-bottom:1px}
+.svc-infra{margin-top:2rem;padding:1.4rem 1.75rem;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.18);border-radius:4px;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.infra-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;flex-shrink:0}
+.infra-text{font-size:0.82rem;color:var(--muted);font-weight:300;line-height:1.6}
+.infra-text strong{color:var(--white);font-weight:500}
+
+/* VOICE */
+.voice-bg{background:var(--navy3);border-top:1px solid rgba(201,168,76,0.07);border-bottom:1px solid rgba(201,168,76,0.07)}
+.voice-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.voice-demo{background:var(--navy2);border:1px solid rgba(201,168,76,0.18);border-radius:10px;padding:2rem;animation:borderPulse 3s infinite}
+.voice-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem}
+.live-dot{width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse 1.5s infinite}
+.live-label{font-size:0.7rem;font-weight:600;color:#22c55e;text-transform:uppercase;letter-spacing:0.08em}
+.wave-bars{display:flex;align-items:center;gap:3px;height:30px;margin-bottom:1.5rem}
+.wb{width:4px;background:var(--gold);border-radius:2px;animation:waveBar 0.9s ease-in-out infinite}
+.wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:0.1s}.wb:nth-child(3){animation-delay:0.2s}.wb:nth-child(4){animation-delay:0.3s}.wb:nth-child(5){animation-delay:0.4s}.wb:nth-child(6){animation-delay:0.5s}.wb:nth-child(7){animation-delay:0.35s}.wb:nth-child(8){animation-delay:0.25s}.wb:nth-child(9){animation-delay:0.15s}.wb:nth-child(10){animation-delay:0.05s}
+.transcript{font-size:0.82rem;color:var(--muted);line-height:1.72;border-left:2px solid rgba(201,168,76,0.3);padding-left:1rem;font-style:italic;margin-bottom:1.4rem;font-weight:300}
+.tech-pills{display:flex;gap:0.5rem;flex-wrap:wrap}
+.tech-pill{font-size:0.68rem;color:#5A3F10;background:rgba(201,168,76,0.15);padding:0.2rem 0.65rem;border-radius:100px;font-weight:600}
+.vf-list{display:flex;flex-direction:column;gap:0.65rem;margin-bottom:2rem}
+.vf-item{display:flex;align-items:center;gap:0.65rem;font-size:0.82rem;color:var(--muted)}
+.vf-check{width:17px;height:17px;min-width:17px;background:rgba(201,168,76,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.vf-check svg{width:8px;height:8px;stroke:var(--gold);fill:none;stroke-width:2.5}
+
+/* INDUSTRIES */
+.industries-bg{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.07)}
+.industries-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.industry-card{background:var(--navy);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:1.5rem;transition:border-color 0.3s,transform 0.3s;cursor:default}
+.industry-card:hover{border-color:rgba(201,168,76,0.3);transform:translateY(-3px)}
+.industry-icon{font-size:1.3rem;margin-bottom:0.85rem;display:block}
+.industry-card h4{font-family:'Syne',sans-serif;font-size:0.92rem;font-weight:700;margin-bottom:0.4rem}
+.industry-card p{font-size:0.78rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+/* PROCESS */
+.process-bg{background:var(--navy);border-top:1px solid rgba(201,168,76,0.07)}
+.steps-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}
+.step-list{display:flex;flex-direction:column;position:relative}
+.step-list::before{content:'';position:absolute;left:21px;top:22px;bottom:22px;width:1px;background:linear-gradient(to bottom,var(--gold),rgba(201,168,76,0.04))}
+.step-item{display:flex;gap:1.5rem;align-items:flex-start;padding:1.4rem 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.step-item:last-child{border-bottom:none}
+.step-n{width:42px;height:42px;min-width:42px;background:var(--gold);color:var(--navy);font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;animation:float 4s ease-in-out infinite}
+.step-item:nth-child(2) .step-n{animation-delay:0.6s}
+.step-item:nth-child(3) .step-n{animation-delay:1.2s}
+.step-item:nth-child(4) .step-n{animation-delay:1.8s}
+.step-title{font-family:'Syne',sans-serif;font-size:0.97rem;font-weight:700;margin-bottom:0.3rem}
+.step-desc{font-size:0.81rem;color:var(--muted);line-height:1.65;font-weight:300}
+.step-tag{display:inline-block;margin-top:0.5rem;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.5);font-weight:600}
+
+/* PRICING */
+.pricing-bg{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.07)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;max-width:1000px}
+.price-card{background:var(--navy);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:2.25rem;position:relative;transition:border-color 0.3s,transform 0.3s}
+.price-card:hover{border-color:rgba(255,255,255,0.2);transform:translateY(-3px)}
+.price-card.featured{border-color:rgba(201,168,76,0.45);background:#0e1520}
+.price-card.featured:hover{border-color:var(--gold)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--navy);font-family:'Syne',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.9rem;border-radius:100px;white-space:nowrap}
+.price-tier{font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:0.85rem}
+.price-num{font-family:'Syne',sans-serif;font-size:2.6rem;font-weight:800;letter-spacing:-0.03em;line-height:1;margin-bottom:0.2rem}
+.price-num sup{font-size:1.1rem;vertical-align:super}
+.price-period{font-size:0.75rem;color:var(--muted);margin-bottom:1.75rem;font-weight:300}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:0.65rem;margin-bottom:1.75rem}
+.price-features li{font-size:0.82rem;color:var(--muted);display:flex;align-items:flex-start;gap:0.6rem;font-weight:300}
+.price-features li::before{content:'';width:14px;height:14px;min-width:14px;border-radius:50%;background:rgba(201,168,76,0.1);margin-top:2px;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 5l2.5 2.5L8 3' stroke='%23C9A84C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-size:9px;background-repeat:no-repeat;background-position:center}
+.price-btn{display:block;text-align:center;padding:0.8rem;font-family:'Syne',sans-serif;font-weight:700;font-size:0.78rem;letter-spacing:0.07em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:all 0.2s;cursor:pointer;border:none}
+.price-btn.outline{border:1px solid rgba(255,255,255,0.18);color:var(--white);background:transparent}
+.price-btn.outline:hover{border-color:rgba(201,168,76,0.5);color:var(--gold)}
+.price-btn.solid{background:var(--gold);color:var(--navy)}
+.price-btn.solid:hover{background:var(--gold2)}
+
+/* TESTIMONIALS */
+.testimonials-bg{background:var(--navy);border-top:1px solid rgba(201,168,76,0.07)}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem}
+.testimonial{background:var(--navy2);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:2rem;transition:border-color 0.3s}
+.testimonial:hover{border-color:rgba(201,168,76,0.2)}
+.testimonial-text{font-size:0.88rem;color:#d8d4c8;line-height:1.78;margin-bottom:1.5rem;font-style:italic;font-weight:300}
+.testimonial-author{display:flex;align-items:center;gap:0.75rem}
+.author-avatar{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,0.15);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:800;color:var(--gold)}
+.author-name{font-size:0.83rem;font-weight:500}
+.author-role{font-size:0.73rem;color:var(--muted)}
+
+/* FAQ */
+.faq-bg{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.07)}
+.faq-list{max-width:740px;display:flex;flex-direction:column}
+.faq-item{border-bottom:1px solid rgba(255,255,255,0.06)}
+.faq-q{width:100%;background:none;border:none;color:var(--white);font-family:'Inter',sans-serif;font-size:0.92rem;font-weight:500;text-align:left;padding:1.35rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;transition:color 0.2s}
+.faq-q:hover{color:var(--gold)}
+.faq-arrow{min-width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:0.75rem;transition:transform 0.3s,background 0.2s,border-color 0.2s}
+.faq-item.open .faq-arrow{transform:rotate(45deg);background:rgba(201,168,76,0.15);border-color:var(--gold);color:var(--gold)}
+.faq-a{font-size:0.85rem;color:var(--muted);line-height:1.78;max-height:0;overflow:hidden;transition:max-height 0.4s ease,padding 0.3s ease;font-weight:300}
+.faq-item.open .faq-a{max-height:300px;padding-bottom:1.4rem}
+
+/* SLOGAN */
+.slogan-band{padding:5rem 5vw;text-align:center;background:var(--navy);border-top:1px solid rgba(201,168,76,0.08)}
+.slogan-main{font-family:'Syne',sans-serif;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;letter-spacing:0.04em;line-height:1.5;margin-bottom:0.75rem}
+.s-e{color:var(--gold)}
+.s-dot{color:rgba(201,168,76,0.35);margin:0 0.1em}
+.slogan-sub{font-size:0.8rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
+
+/* CONTACT */
+.contact-bg{background:var(--navy2);border-top:1px solid rgba(201,168,76,0.07)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start}
+.contact-perks{display:flex;flex-direction:column;gap:0.85rem;margin-top:2rem}
+.contact-perk{display:flex;align-items:center;gap:0.75rem;font-size:0.85rem;color:var(--muted)}
+.perk-check{color:var(--gold);font-size:0.9rem;font-weight:700}
+.form-group{margin-bottom:1.1rem}
+.form-group label{display:block;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.45rem;font-weight:500}
+.form-group input,.form-group textarea,.form-group select{width:100%;background:var(--navy);border:1px solid rgba(255,255,255,0.08);color:var(--white);font-family:'Inter',sans-serif;font-size:0.88rem;padding:0.8rem 1rem;border-radius:3px;outline:none;transition:border-color 0.2s;font-weight:300}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--gold)}
+.form-group textarea{resize:vertical;min-height:110px}
+.form-group select option{background:#0F1525}
+.form-submit{width:100%;padding:0.95rem;font-size:0.88rem}
+
+/* CTA */
+.cta-sec{padding:8rem 5vw;text-align:center;position:relative;overflow:hidden;background:var(--navy)}
+.cta-ring{position:absolute;width:500px;height:500px;border-radius:50%;border:1px solid rgba(201,168,76,0.06);top:50%;left:50%;transform:translate(-50%,-50%);animation:spin 22s linear infinite}
+.cta-ring2{position:absolute;width:340px;height:340px;border-radius:50%;border:1px solid rgba(201,168,76,0.09);top:50%;left:50%;transform:translate(-50%,-50%);animation:spinR 15s linear infinite}
+.cta-ring3{position:absolute;width:660px;height:660px;border-radius:50%;border:1px solid rgba(201,168,76,0.03);top:50%;left:50%;transform:translate(-50%,-50%);animation:spin 35s linear infinite}
+.cta-sec h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4.5vw,3rem);font-weight:800;line-height:1.1;margin-bottom:1rem;position:relative;z-index:2}
+.cta-sec p{color:var(--muted);font-size:0.95rem;max-width:440px;margin:0 auto 2.5rem;line-height:1.75;position:relative;z-index:2;font-weight:300}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;position:relative;z-index:2}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(255,255,255,0.06);padding:2.5rem 5vw;background:var(--navy);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-logo{display:flex;align-items:center;gap:0.55rem;text-decoration:none}
+.footer-links{display:flex;gap:1.5rem;flex-wrap:wrap;list-style:none}
+.footer-links a{font-size:0.75rem;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--gold)}
+.footer-copy{font-size:0.72rem;color:var(--muted)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nav-links{display:none}
+  .pillars-wrap,.agents-wrap,.voice-wrap,.steps-wrap,.contact-grid{grid-template-columns:1fr}
+  .pillars-wrap::before,.pillars-wrap::after{display:none}
+  .pillar,.pillar:nth-child(2),.pillar:nth-child(3){padding:1.5rem 0;border-bottom:1px solid rgba(201,168,76,0.08)}
+  .pricing-grid{grid-template-columns:1fr}
+  .etis-strip{flex-wrap:wrap}
+  .etis-item{flex:1 0 45%}
+  .svc-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg width="32" height="38" viewBox="0 0 36 42" aria-hidden="true">
+      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
+      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/>
+      <circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/>
+      <circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/>
+      <circle cx="7" cy="26" r="1.6" fill="#C9A84C" opacity="0.6"/>
+      <circle cx="29" cy="26" r="1.6" fill="#C9A84C" opacity="0.6"/>
+      <circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+      <circle cx="14" cy="34" r="1.4" fill="#C9A84C" opacity="0.5"/>
+      <circle cx="22" cy="34" r="1.4" fill="#C9A84C" opacity="0.5"/>
+      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/>
+      <line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/>
+      <line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      <line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      <line x1="7" y1="26" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.7" opacity="0.4"/>
+      <line x1="29" y1="26" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.7" opacity="0.4"/>
+      <line x1="14" y1="34" x2="7" y2="26" stroke="#C9A84C" stroke-width="0.6" opacity="0.32"/>
+      <line x1="22" y1="34" x2="29" y2="26" stroke="#C9A84C" stroke-width="0.6" opacity="0.32"/>
+    </svg>
+    <div class="nav-wordmark">
+      <span class="nav-name">etisora</span>
+      <span class="nav-sub">AI Automation</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#industries">Industries</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-btn">Get a Free Demo</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas class="hero-canvas" id="heroCanvas"></canvas>
+  <div class="badge"><div class="badge-dot"></div>AI Automation for Small & Medium Businesses</div>
+  <h1>Automate. Convert.<br><span class="gold-text">Scale endlessly.</span></h1>
+  <p class="hero-sub">etisora builds custom AI agents that answer calls, qualify leads, handle support and book appointments — 24/7, without a single extra hire.</p>
+
+  <div class="etis-strip">
+    <div class="etis-item"><div class="etis-letter">E</div><div class="etis-word">Elevate</div></div>
+    <div class="etis-item"><div class="etis-letter">T</div><div class="etis-word">Transform</div></div>
+    <div class="etis-item"><div class="etis-letter">I</div><div class="etis-word">Implement</div></div>
+    <div class="etis-item"><div class="etis-letter">S</div><div class="etis-word">Succeed</div></div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="#contact" class="btn-gold">Book a Free Strategy Call</a>
+    <a href="#services" class="btn-outline">See What We Build</a>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item"><span class="stat-num">70%</span><div class="stat-lbl">Support tickets automated</div></div>
+    <div class="stat-item"><span class="stat-num">30d</span><div class="stat-lbl">Average go-live time</div></div>
+    <div class="stat-item"><span class="stat-num">24/7</span><div class="stat-lbl">Agent availability</div></div>
+    <div class="stat-item"><span class="stat-num">3x</span><div class="stat-lbl">Avg. lead response speed</div></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span class="ticker-item">Elevate</span><span class="ticker-item">Transform</span><span class="ticker-item">Implement</span><span class="ticker-item">Succeed</span><span class="ticker-item">AI Chatbots</span><span class="ticker-item">Voice AI</span><span class="ticker-item">Lead Generation</span><span class="ticker-item">Automation</span><span class="ticker-item">sora 空 — limitless sky</span>
+    <span class="ticker-item">Elevate</span><span class="ticker-item">Transform</span><span class="ticker-item">Implement</span><span class="ticker-item">Succeed</span><span class="ticker-item">AI Chatbots</span><span class="ticker-item">Voice AI</span><span class="ticker-item">Lead Generation</span><span class="ticker-item">Automation</span><span class="ticker-item">sora 空 — limitless sky</span>
+  </div>
+</div>
+
+<!-- FOUNDATION -->
+<div class="foundation-bg">
+  <div class="sec reveal">
+    <span class="sec-tag">Our foundation</span>
+    <div class="sec-title">Every letter tells our story</div>
+    <p class="sec-sub">etisora is built on three powerful pillars — a philosophy that drives everything we build for your business. Before we tell you what we do, we want you to understand <em>why</em> we exist.</p>
+
+    <div class="sora-callout">
+      <span class="sora-word">sora 空</span>
+      <p class="sora-meaning">In Japanese, <strong>sora (空)</strong> means sky — boundless, limitless, infinite. We chose it deliberately. Because that's exactly what we give your business — <strong>the power to scale endlessly, reach further and grow without limits.</strong> No ceiling. No borders. Just growth.</p>
+    </div>
+
+    <div class="pillars-wrap">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <div class="pillar-line"></div>
+        <div class="pillar-ico"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+        <div class="pillar-title">Elevate</div>
+        <div class="pillar-desc">We lift your business above the competition — giving you AI tools that create an unfair advantage in every customer interaction, every single day.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <div class="pillar-line" style="animation-delay:0.15s"></div>
+        <div class="pillar-ico"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+        <div class="pillar-title">Transform</div>
+        <div class="pillar-desc">We transform how you operate — turning slow, costly manual processes into intelligent automations that work around the clock so you don't have to.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <div class="pillar-line" style="animation-delay:0.3s"></div>
+        <div class="pillar-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="pillar-title">Implement</div>
+        <div class="pillar-desc">We don't just advise — we build and deploy. Real AI solutions, implemented fast, with zero technical complexity on your end. Done in weeks, not months.</div>
+      </div>
+    </div>
+
+    <div class="promise-wrap">
+      <div class="promise-label">The etisora promise</div>
+      <div class="promise-headline">Built into every letter of our <span>name</span></div>
+      <div class="etisora-letters">
+        <div class="letter-row"><div class="letter-char">E</div><div class="letter-content"><div class="letter-word">Elevate</div><div class="letter-desc">Rise above the ordinary. We give your business tools that put you ahead — not just today, but permanently.</div></div></div>
+        <div class="letter-row"><div class="letter-char">T</div><div class="letter-content"><div class="letter-word">Transform</div><div class="letter-desc">Change how you work at every level. From customer conversations to internal workflows — transformed by AI.</div></div></div>
+        <div class="letter-row"><div class="letter-char">I</div><div class="letter-content"><div class="letter-word">Implement</div><div class="letter-desc">Ideas mean nothing without execution. We build, deploy and activate — so you see results from day one.</div></div></div>
+        <div class="letter-row"><div class="letter-char">S</div><div class="letter-content"><div class="letter-word">Succeed</div><div class="letter-desc">Your growth is our measure. Every solution we build is designed with one goal — your business succeeding.</div></div></div>
+        <div class="letter-row"><div class="letter-char">O</div><div class="letter-content"><div class="letter-word">Optimise</div><div class="letter-desc">We never set and forget. We continuously optimise your AI agents as your business grows and evolves.</div></div></div>
+        <div class="letter-row"><div class="letter-char">R</div><div class="letter-content"><div class="letter-word">Reach</div><div class="letter-desc">Reach more customers, more markets, more opportunities — without adding headcount or complexity.</div></div></div>
+        <div class="letter-row" style="border-bottom:none"><div class="letter-char">A</div><div class="letter-content"><div class="letter-word">Ascend</div><div class="letter-desc">Like <em>sora</em> — the Japanese word for sky — we give your business the power to scale endlessly, with no ceiling in sight.</div><div><span class="sora-tag">sora 空 — limitless sky</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI AGENTS -->
+<div class="agents-bg">
+  <div class="sec reveal">
+    <div class="agents-wrap">
+      <div>
+        <span class="sec-tag">Custom AI agents</span>
+        <div class="agents-headline">AI agents that do <span class="gold-text">real work</span></div>
+        <p class="agents-body">Every agent is custom built by etisora — trained on your data, connected to your tools and deployed in weeks. No code required on your end.</p>
+        <div class="agents-subline">We handle everything. You handle growth.</div>
+        <a href="#contact" class="btn-gold">Build my AI agent ↗</a>
+        <div class="no-code-box">
+          <div class="nc-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="nc-text"><strong>Zero technical knowledge needed.</strong> We train it, connect it, deploy it and maintain it — all you do is watch it work for your business.</div>
+        </div>
+      </div>
+      <div class="agent-cards">
+        <div class="agent-card">
+          <div class="agent-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div><div class="agent-title">Conversational chatbot agent</div><div class="agent-desc">Trained on your FAQs, products and tone of voice — answers customers exactly as you would, every time.</div><span class="agent-tag">Web · WhatsApp · Facebook</span></div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-ico"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+          <div><div class="agent-title">Voice receptionist agent</div><div class="agent-desc">Answers calls, qualifies leads and books appointments in a natural human voice — 24 hours a day, 7 days a week.</div><span class="agent-tag">Phone · Web · WhatsApp</span></div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div><div class="agent-title">Lead generation agent</div><div class="agent-desc">Captures, qualifies and nurtures leads automatically — connected directly to your CRM with zero manual work.</div><span class="agent-tag">CRM · Email · Pipeline</span></div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-ico"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <div><div class="agent-title">Workflow automation agent</div><div class="agent-desc">Connects your apps and eliminates manual tasks — invoices, follow-ups, notifications all on autopilot.</div><span class="agent-tag">Make · Zapier · Custom API</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<div class="svc-bg" id="services">
+  <div class="sec reveal">
+    <span class="sec-tag">What we build</span>
+    <div class="sec-title">7 services. One platform.<br><span class="gold-text">Infinite growth.</span></div>
+    <p class="sec-sub">Everything your small or medium business needs to automate, convert and scale — every solution custom built and deployed by our team.</p>
+    <div class="svc-grid">
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>AI Website Chatbot</h3>
+        <p>A fully branded chat widget that lives on your website — greeting visitors, answering questions, capturing leads and guiding customers 24/7. The fastest way to turn website traffic into real conversations and paying customers.</p>
+        <span class="svc-tag">Website · Chat Widget · Lead Capture</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+        <h3>AI Voice Phone Agent</h3>
+        <p>We deploy human-sounding inbound call agents connected to your phone system. They route enquiries, answer questions and book appointments — 24/7, without hold times or missed calls. Built on Voiceflow, GPT-4o and ElevenLabs.</p>
+        <span class="svc-tag">Voice · Phone · AI Call Centre</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>AI Lead Qualification Agent</h3>
+        <p>We design smart qualification flows that engage visitors instantly, score leads and push qualified prospects directly into HubSpot, Salesforce or your CRM — with calendar booking built in so hot leads are never lost.</p>
+        <span class="svc-tag">Chat · HubSpot · Calendly</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <h3>Appointment Booking Agent</h3>
+        <p>Our AI agents connect directly to Google Calendar or Calendly. Customers book, reschedule and receive reminders — all handled conversationally via chat or voice, with zero back-and-forth or admin time on your end.</p>
+        <span class="svc-tag">Chat · Google Calendar · WhatsApp</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <h3>AI Customer Support Agent</h3>
+        <p>Our AI handles FAQs, order tracking, refunds and live agent escalation — resolving up to 70% of tickets automatically. Integrates with Zendesk, Intercom and your help centre so your team only touches complex issues.</p>
+        <span class="svc-tag">Chat · Zendesk · Help Centre</span>
+      </div>
+      <div class="svc-card">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3>Workflow & Task Automation</h3>
+        <p>Connect your tools and eliminate repetitive manual work — from email follow-ups and invoice generation to data entry, internal notifications and CRM updates. All triggered automatically, all without code.</p>
+        <span class="svc-tag">Make · Zapier · Custom API</span>
+      </div>
+      <div class="svc-card" style="grid-column:1/-1">
+        <div class="svc-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+        <h3>Custom AI Agent Solutions</h3>
+        <p>Have a unique challenge? We design and build fully bespoke AI agents tailored to your exact business needs — from complex multi-step automations to industry-specific conversational flows that no off-the-shelf tool can solve. Every agent is trained on your data, connected to your existing tools and deployed in weeks. This is where etisora's real power lies — we've built AI solutions for healthcare, legal, logistics, real estate and more. If you can describe the problem, we can build the solution.</p>
+        <span class="svc-tag">Bespoke · Enterprise · Any Industry</span>
+      </div>
+    </div>
+    <div class="svc-infra" style="margin-top:2rem">
+      <div class="infra-dot"></div>
+      <p class="infra-text"><strong>Powered by enterprise-grade infrastructure —</strong> all etisora agents run on secure, scalable, GDPR-compliant infrastructure built to handle millions of conversations. Voiceflow, GPT-4o, ElevenLabs and Make.com under the hood.</p>
+    </div>
+  </div>
+</div>
+
+<!-- VOICE AI SPOTLIGHT -->
+<div class="voice-bg" id="voice">
+  <div class="sec reveal">
+    <div class="voice-wrap">
+      <div>
+        <span class="sec-tag">Voice AI spotlight</span>
+        <div class="sec-title">Your AI receptionist.<br><span class="gold-text">Always available.</span></div>
+        <p class="sec-sub" style="margin-bottom:1.5rem">Our Voice AI agents sound natural, think fast and never put a customer on hold. Built on Voiceflow — deployed in days.</p>
+        <div class="vf-list">
+          <div class="vf-item"><div class="vf-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Answers calls instantly — no hold music, no missed leads</div>
+          <div class="vf-item"><div class="vf-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Books appointments directly into your calendar</div>
+          <div class="vf-item"><div class="vf-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Handles FAQs, pricing and product queries</div>
+          <div class="vf-item"><div class="vf-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Escalates to a human when needed — seamlessly</div>
+          <div class="vf-item"><div class="vf-check"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div>Works across phone, web and WhatsApp</div>
+        </div>
+        <a href="#contact" class="btn-gold" style="margin-top:1.75rem">Hear it in action ↗</a>
+      </div>
+      <div class="voice-demo">
+        <div class="voice-header"><div class="live-dot"></div><span class="live-label">Live Voice Agent</span></div>
+        <div class="wave-bars"><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div></div>
+        <div class="transcript">"Hi there! Thanks for calling. I'm etisora's AI assistant. I can help you book an appointment, answer any questions or connect you with the team. How can I help you today?"</div>
+        <div style="height:1px;background:rgba(201,168,76,0.1);margin-bottom:1.25rem"></div>
+        <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.7rem;font-weight:600">Powered by</div>
+        <div class="tech-pills">
+          <span class="tech-pill">Voiceflow</span>
+          <span class="tech-pill">GPT-4o</span>
+          <span class="tech-pill">ElevenLabs</span>
+          <span class="tech-pill">Make.com</span>
+          <span class="tech-pill">Twilio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INDUSTRIES -->
+<div class="industries-bg" id="industries">
+  <div class="sec reveal">
+    <span class="sec-tag">Industries we serve</span>
+    <div class="sec-title">Built for businesses <span class="gold-text">like yours</span></div>
+    <p class="sec-sub">From restaurants to real estate, we've seen what works — and we bring that expertise to every build.</p>
+    <div class="industries-grid">
+      <div class="industry-card"><span class="industry-icon">🏥</span><h4>Healthcare & Dental</h4><p>Appointment scheduling, patient FAQs and insurance queries — handled automatically, compliantly.</p></div>
+      <div class="industry-card"><span class="industry-icon">🍽️</span><h4>Restaurants</h4><p>Reservations, menu questions, catering enquiries and hours — no more missed calls or slow replies.</p></div>
+      <div class="industry-card"><span class="industry-icon">🏠</span><h4>Real Estate</h4><p>Qualify buyer and renter leads, schedule showings and answer property questions 24/7.</p></div>
+      <div class="industry-card"><span class="industry-icon">🛍️</span><h4>E-commerce</h4><p>Order tracking, returns, product recommendations and abandoned cart recovery — all automated.</p></div>
+      <div class="industry-card"><span class="industry-icon">⚖️</span><h4>Law Firms</h4><p>Initial intake, appointment booking, case-type filtering and FAQ deflection before the first meeting.</p></div>
+      <div class="industry-card"><span class="industry-icon">💆</span><h4>Wellness & Beauty</h4><p>Booking, service menus and follow-up messages for salons, spas and wellness studios.</p></div>
+      <div class="industry-card"><span class="industry-icon">🚗</span><h4>Automotive</h4><p>Service scheduling, trade-in enquiries, test drive bookings and parts availability checks.</p></div>
+      <div class="industry-card"><span class="industry-icon">📦</span><h4>Logistics & Freight</h4><p>Shipment tracking, pickup scheduling, driver support and customer notifications — automated.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESS -->
+<div class="process-bg" id="process">
+  <div class="sec reveal">
+    <div class="steps-wrap">
+      <div>
+        <span class="sec-tag">How it works</span>
+        <div class="sec-title">Live in <span class="gold-text">30 days</span> — guaranteed</div>
+        <p class="sec-sub">A clear, proven process from discovery to deployment — fully managed by etisora. No engineering teams required on your side.</p>
+        <a href="#contact" class="btn-gold">Book a free call ↗</a>
+      </div>
+      <div class="step-list">
+        <div class="step-item">
+          <div class="step-n">01</div>
+          <div><div class="step-title">Strategy call</div><div class="step-desc">We audit your current workflows, identify the highest-ROI automation opportunities and map out which AI agents will deliver the fastest results for your business.</div><span class="step-tag">Free — No commitment</span></div>
+        </div>
+        <div class="step-item">
+          <div class="step-n">02</div>
+          <div><div class="step-title">Design & build</div><div class="step-desc">We design your custom conversational flows, train your agent on your knowledge base and connect it to your existing tools via 300+ integrations — CRM, calendar, helpdesk and more.</div><span class="step-tag">1–2 weeks</span></div>
+        </div>
+        <div class="step-item">
+          <div class="step-n">03</div>
+          <div><div class="step-title">Test & refine</div><div class="step-desc">We run your agent through real-world scenarios and edge cases. You review every flow before it goes live — no surprises, no guesswork.</div><span class="step-tag">1 week</span></div>
+        </div>
+        <div class="step-item">
+          <div class="step-n">04</div>
+          <div><div class="step-title">Launch & optimise</div><div class="step-desc">We deploy your agent and review conversation analytics monthly to keep it improving. Your business keeps growing — we keep optimising.</div><span class="step-tag">Ongoing monthly support</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing-bg" id="pricing">
+  <div class="sec reveal">
+    <span class="sec-tag">Transparent pricing</span>
+    <div class="sec-title">Simple plans. <span class="gold-text">Real ROI.</span></div>
+    <p class="sec-sub">One-time setup + a low monthly retainer. No per-seat fees, no surprise bills. Cancel anytime after 3 months.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-num"><sup>$</sup>997</div>
+        <div class="price-period">one-time setup + $297/mo retainer</div>
+        <ul class="price-features">
+          <li>1 custom AI chatbot agent</li>
+          <li>Up to 5,000 conversations/mo</li>
+          <li>1 integration (CRM or calendar)</li>
+          <li>Website embed or WhatsApp</li>
+          <li>Monthly performance report</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#contact" class="price-btn outline">Get Started</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">Most Popular</div>
+        <div class="price-tier">Growth</div>
+        <div class="price-num"><sup>$</sup>2,497</div>
+        <div class="price-period">one-time setup + $597/mo retainer</div>
+        <ul class="price-features">
+          <li>Up to 3 AI agents (chat + voice)</li>
+          <li>Up to 20,000 conversations/mo</li>
+          <li>3 integrations (CRM, calendar, helpdesk)</li>
+          <li>Multi-channel: web, phone, WhatsApp</li>
+          <li>Bi-weekly optimisation calls</li>
+          <li>Priority Slack support</li>
+        </ul>
+        <a href="#contact" class="price-btn solid">Book a Call</a>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-num">Custom</div>
+        <div class="price-period">scoped per project</div>
+        <ul class="price-features">
+          <li>Unlimited agents across all channels</li>
+          <li>Custom AI model fine-tuning</li>
+          <li>Full API + enterprise integrations</li>
+          <li>Dedicated account manager</li>
+          <li>Weekly strategy reviews</li>
+          <li>SLA guarantees + 24/7 support</li>
+        </ul>
+        <a href="#contact" class="price-btn outline">Let's Talk</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TESTIMONIALS -->
+<div class="testimonials-bg">
+  <div class="sec reveal">
+    <span class="sec-tag">Early results</span>
+    <div class="sec-title">What clients <span class="gold-text">are saying</span></div>
+    <p class="sec-sub">Real feedback from businesses who deployed their first AI agents with us.</p>
+    <div class="testimonials-grid">
+      <div class="testimonial">
+        <p class="testimonial-text">"We went from missing 40% of after-hours calls to capturing every single lead. The ROI was clear in the first month. Our booking rate went up 60%."</p>
+        <div class="testimonial-author"><div class="author-avatar">MR</div><div><div class="author-name">Maria R.</div><div class="author-role">Owner, Bella Dental Group — Miami, FL</div></div></div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">"The chatbot handles 80% of our customer support tickets now. My team focuses on growth, not repetitive questions. Best investment we made this year."</p>
+        <div class="testimonial-author"><div class="author-avatar">JT</div><div><div class="author-name">James T.</div><div class="author-role">CEO, Coastal Supply Co. — E-commerce</div></div></div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">"Our AI lead agent qualifies buyers before they ever speak to an agent. We're now converting 2x more website visitors into actual showings."</p>
+        <div class="testimonial-author"><div class="author-avatar">SC</div><div><div class="author-name">Sofia C.</div><div class="author-role">Broker, Prime Realty Miami</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-bg" id="faq">
+  <div class="sec reveal">
+    <span class="sec-tag">Questions answered</span>
+    <div class="sec-title">Everything you <span class="gold-text">need to know</span></div>
+    <p class="sec-sub">Straight answers — no jargon.</p>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Do I need any technical knowledge to use the agents? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">None at all. We handle everything — design, build, integrations and deployment. You review and approve. Once live, you manage it from a simple dashboard, or we manage it for you on the retainer.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How long does it take to go live? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">Most clients are live within 2–4 weeks. The timeline depends on how many integrations are needed and how quickly you can provide access to your tools and review feedback. We've launched simple agents in as little as 7 days.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What happens if the agent doesn't know an answer? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">Every agent is built with fallback flows — it either collects the user's information to follow up, or escalates seamlessly to a human agent via email, CRM ticket or live chat handoff. Nothing gets dropped.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What tools and platforms do you integrate with? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">We integrate with Salesforce, HubSpot, Calendly, Google Calendar, Shopify, Zendesk, Intercom, WhatsApp, Twilio, Slack and more. If you use it, we can likely connect to it. Custom API integrations are available on Growth and Enterprise plans.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is my customer data safe? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">Yes. All etisora agents run on secure, GDPR-compliant infrastructure. We never sell or share your customer data — all interactions are logged only within your dedicated workspace. For regulated industries like healthcare, we discuss compliant deployment options during your strategy call.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I cancel or pause the monthly retainer? <span class="faq-arrow">+</span></button>
+        <div class="faq-a">After the initial 3-month term, you can pause or cancel with 30 days' notice. We believe in earning your business every month — not locking you in. Your agent and all its flows remain yours.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLOGAN -->
+<div class="slogan-band reveal">
+  <div class="slogan-main">
+    <span class="s-e">E</span>levate<span class="s-dot"> · </span><span class="s-e">T</span>ransform<span class="s-dot"> · </span><span class="s-e">I</span>mplement<span class="s-dot"> · </span><span class="s-e">S</span>ucceed
+  </div>
+  <div class="slogan-sub">The etisora promise — in every solution we build</div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-bg" id="contact">
+  <div class="sec reveal">
+    <div class="contact-grid">
+      <div>
+        <span class="sec-tag">Let's talk</span>
+        <div class="sec-title">Get your free <span class="gold-text">AI strategy session</span></div>
+        <p class="sec-sub" style="margin-bottom:1rem">Tell us about your business and we'll map out exactly which agents would generate the fastest ROI. Zero pressure, pure value.</p>
+        <div class="contact-perks">
+          <div class="contact-perk"><span class="perk-check">✓</span>Free 30-minute strategy call</div>
+          <div class="contact-perk"><span class="perk-check">✓</span>Custom ROI estimate for your business</div>
+          <div class="contact-perk"><span class="perk-check">✓</span>Live demo of a relevant agent</div>
+          <div class="contact-perk"><span class="perk-check">✓</span>No commitment required</div>
+        </div>
+
+        <div style="margin-top:2.5rem;padding:1.5rem;border:1px solid rgba(201,168,76,0.15);border-radius:8px;background:rgba(201,168,76,0.04)">
+          <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem">What happens next</div>
+          <div style="display:flex;flex-direction:column;gap:0.85rem">
+            <div style="display:flex;gap:1rem;align-items:flex-start">
+              <div style="width:24px;height:24px;min-width:24px;background:var(--gold);color:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:800">1</div>
+              <div style="font-size:0.82rem;color:var(--muted);line-height:1.55">Pick a time that works for you using the calendar on the right</div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:flex-start">
+              <div style="width:24px;height:24px;min-width:24px;background:var(--gold);color:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:800">2</div>
+              <div style="font-size:0.82rem;color:var(--muted);line-height:1.55">We'll send a confirmation + prep questions to your inbox</div>
+            </div>
+            <div style="display:flex;gap:1rem;align-items:flex-start">
+              <div style="width:24px;height:24px;min-width:24px;background:var(--gold);color:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:800">3</div>
+              <div style="font-size:0.82rem;color:var(--muted);line-height:1.55">On the call, we map out your custom AI strategy — free, no strings attached</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem;display:flex;align-items:center;gap:0.75rem;padding:1rem;border:1px solid rgba(201,168,76,0.12);border-radius:6px">
+          <div style="width:36px;height:36px;min-width:36px;background:rgba(201,168,76,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5">Prefer to call us directly? Reach us at <strong style="color:var(--white)">hello@etisora.ai</strong></div>
+        </div>
+      </div>
+
+      <!-- CALENDLY EMBED -->
+      <div>
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem">Book your free strategy call</div>
+
+        <!-- ============================================================
+             DEVELOPER NOTE:
+             Replace the URL below with your actual Calendly link.
+             Format: https://calendly.com/YOUR-USERNAME/YOUR-EVENT-NAME
+             
+             Example: https://calendly.com/etisora/strategy-call
+             
+             To customise the embed appearance, visit:
+             https://help.calendly.com/hc/en-us/articles/360020052833
+             ============================================================ -->
+        <div
+          class="calendly-inline-widget"
+          data-url="https://calendly.com/etisora/strategy-call?hide_landing_page_details=1&hide_gdpr_banner=1&background_color=0F1525&text_color=F4F1EA&primary_color=C9A84C"
+          style="min-width:280px;height:700px;border-radius:8px;overflow:hidden;border:1px solid rgba(201,168,76,0.18)">
+        </div>
+        <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+
+        <p style="font-size:0.7rem;color:var(--muted);margin-top:0.85rem;text-align:center;line-height:1.55">
+          Powered by Calendly · Your data is safe and never shared · <a href="#" style="color:var(--gold);text-decoration:none">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-sec reveal">
+  <div class="cta-ring"></div><div class="cta-ring2"></div><div class="cta-ring3"></div>
+  <h2>Your first agent could be<br><span class="gold-text">live in 30 days.</span></h2>
+  <p>Join businesses already running on AI — and stop losing leads, calls and customers to slow response times.</p>
+  <div class="cta-btns">
+    <a href="#contact" class="btn-gold">Book Free Strategy Call</a>
+    <a href="#pricing" class="btn-outline">View Pricing</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">
+    <svg width="24" height="29" viewBox="0 0 36 42" aria-hidden="true">
+      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.5"/>
+      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/>
+      <circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/>
+      <circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/>
+      <circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      <line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      <line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.45"/>
+      <line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.45"/>
+    </svg>
+    <div class="nav-wordmark" style="margin-left:0.5rem">
+      <span class="nav-name" style="font-size:0.95rem">etisora</span>
+      <span class="nav-sub">AI Automation</span>
+    </div>
+  </a>
+  <ul class="footer-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#industries">Industries</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#">Privacy Policy</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 etisora.ai — Elevate. Transform. Implement. Succeed.</div>
+</footer>
+
+<script>
+/* PARTICLES */
+const canvas=document.getElementById('heroCanvas');
+const ctx=canvas.getContext('2d');
+let W,H,pts=[];
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight}
+function mkPt(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.3,vx:(Math.random()-0.5)*0.28,vy:-Math.random()*0.35-0.08,a:Math.random()*0.45+0.08,life:Math.random()}}
+function init(){pts=[];for(let i=0;i<90;i++)pts.push(mkPt())}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.life-=0.0018;
+    if(p.life<=0||p.y<-8){Object.assign(p,mkPt());p.y=H+5}
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(201,168,76,${p.a*Math.min(p.life*2,1)})`;ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+resize();init();draw();
+window.addEventListener('resize',()=>{resize();init()});
+
+/* SCROLL REVEAL */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}});
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* FAQ */
+function toggleFaq(btn){
+  const item=btn.parentElement;
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+
+/* SMOOTH SCROLL */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target){e.preventDefault();target.scrollIntoView({behavior:'smooth'})}
+  });
+});
+
+/* LETTER ROWS ANIMATION */
+document.querySelectorAll('.letter-row').forEach((row,i)=>{
+  row.style.opacity='0';row.style.transform='translateX(-12px)';
+  row.style.transition=`opacity 0.5s ${i*0.07}s ease,transform 0.5s ${i*0.07}s ease`;
+  setTimeout(()=>{row.style.opacity='1';row.style.transform='translateX(0)'},200+i*70);
+});
+</script>
+</body>
+</html>

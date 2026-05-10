@@ -1,0 +1,4 @@
+﻿window.ETISORA_ENV = {
+  GROQ_API_KEY: 'replace_with_real_key',
+  GROQ_MODEL: 'llama-3.3-70b-versatile'
+};

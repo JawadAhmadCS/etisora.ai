@@ -405,6 +405,7 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 }
 .ec-field::placeholder{color:var(--muted)}
 .ec-field:focus{border-color:rgba(201,168,76,.4)}
+#ec-notes{width:calc(100% + 8px);margin-left:-4px;margin-right:-4px;min-height:92px;resize:vertical}
 #ec-submit{
   width:100%;background:var(--gold);color:var(--navy);font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;padding:.6rem;border:none;border-radius:6px;cursor:pointer;transition:background .2s;letter-spacing:.03em
 }
@@ -1321,9 +1322,14 @@ startPB(); schedule();
 
     <div id="ec-lead-form">
       <div class="ec-form-title">Get your free AI audit</div>
-      <input class="ec-field" id="ec-fname" placeholder="Name" type="text">
+      <div class="ec-form-row">
+        <input class="ec-field" id="ec-fname" placeholder="First name" type="text">
+        <input class="ec-field" id="ec-lname" placeholder="Last name" type="text">
+      </div>
       <input class="ec-field" id="ec-email" placeholder="Work email" type="email">
-      <textarea class="ec-field" id="ec-notes" placeholder="Please share anything that will help prepare for our meeting." rows="3"></textarea>
+      <input class="ec-field" id="ec-biz" placeholder="Business name" type="text">
+      <input class="ec-field" id="ec-phone" placeholder="Phone" type="tel">
+      <textarea class="ec-field" id="ec-notes" placeholder="Notes" rows="3"></textarea>
       <button id="ec-submit">Book My Free Strategy Call</button>
     </div>
 
@@ -1475,11 +1481,16 @@ startPB(); schedule();
     const baseUrl = (widget && widget.getAttribute("data-url")) || "https://calendly.com/infoetisora/30min";
     try {
       const url = new URL(baseUrl, window.location.origin);
-      const fullName = (lead.fname || "").trim();
+      const fullName = ((lead.fname || "") + " " + (lead.lname || "")).trim();
       if (fullName) url.searchParams.set("name", fullName);
       if (lead.email) url.searchParams.set("email", lead.email);
-      if (lead.notes) url.searchParams.set("a1", lead.notes);
-      const finalUrl = url.toString();
+      const mergedNotes = [
+        lead.notes ? ("Notes: " + lead.notes) : "",
+        lead.biz ? ("Business name: " + lead.biz) : "",
+        lead.phone ? ("Phone: " + lead.phone) : ""
+      ].filter(Boolean).join("\n");
+      if (mergedNotes) url.searchParams.set("a1", mergedNotes);
+      const finalUrl = url.toString().replace(/\+/g, "%20");
 
       messages.style.display = "none";
       typing.style.display = "none";
@@ -1504,16 +1515,20 @@ startPB(); schedule();
   }
   submitBtn.addEventListener("click", function(){
     const fname = document.getElementById("ec-fname").value.trim();
+    const lname = document.getElementById("ec-lname").value.trim();
     const email = document.getElementById("ec-email").value.trim();
+    const biz = document.getElementById("ec-biz").value.trim();
+    const phone = document.getElementById("ec-phone").value.trim();
     const notes = document.getElementById("ec-notes").value.trim();
-    if (!fname || !email) {
+    if (!fname || !lname || !email) {
       document.getElementById("ec-fname").style.borderColor = fname ? "" : "rgba(239,68,68,.6)";
+      document.getElementById("ec-lname").style.borderColor = lname ? "" : "rgba(239,68,68,.6)";
       document.getElementById("ec-email").style.borderColor = email ? "" : "rgba(239,68,68,.6)";
       return;
     }
     submitBtn.disabled = true;
     submitBtn.textContent = "Submitting...";
-    const lead = { fname: fname, email: email, notes: notes, timestamp: new Date().toISOString() };
+    const lead = { fname: fname, lname: lname, email: email, biz: biz, phone: phone, notes: notes, timestamp: new Date().toISOString() };
     console.log("Etisora Lead Captured:", lead);
     openCalendlyFromChat(lead);
     leadCaptured = true;

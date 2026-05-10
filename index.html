@@ -15,8 +15,8 @@
 body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);line-height:1.6}
 .site-header{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:.9rem 5vw;background:rgba(8,12,24,.95);border-bottom:1px solid rgba(201,168,76,.1);backdrop-filter:blur(16px)}
 .header-logo{display:flex;align-items:center;text-decoration:none}
-.header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none;perspective:800px}
-.logo-icon-3d{display:block;transform-style:preserve-3d;animation:logoIconSpin3d 6.8s ease-in-out infinite;will-change:transform}
+.header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none;perspective:1200px}
+.logo-icon-3d{display:block;transform-style:preserve-3d;animation:logoIconSpin3d 10.2s linear infinite;will-change:transform}
 .header-logo-3d .logo-icon-3d svg{width:32px;height:38px;display:block;transition:filter .28s ease}
 .header-logo-3d:hover .logo-icon-3d svg{filter:drop-shadow(0 8px 14px rgba(201,168,76,.24))}
 .header-logo-wordmark{display:flex;flex-direction:column;line-height:1}
@@ -33,11 +33,8 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
 @keyframes logoIconSpin3d{
-  0%{transform:rotateX(0deg) rotateY(0deg)}
-  25%{transform:rotateX(7deg) rotateY(16deg)}
-  50%{transform:rotateX(0deg) rotateY(180deg)}
-  75%{transform:rotateX(-7deg) rotateY(344deg)}
-  100%{transform:rotateX(0deg) rotateY(360deg)}
+  from{transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
+  to{transform:rotateX(360deg) rotateY(720deg) rotateZ(360deg)}
 }
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 @keyframes borderPulse{0%,100%{border-color:rgba(201,168,76,.18)}50%{border-color:rgba(201,168,76,.5)}}

@@ -351,8 +351,6 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 #ec-header-text .ec-status{font-size:.68rem;color:var(--green);display:flex;align-items:center;gap:.3rem}
 .ec-status-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:ec-blink 1.8s infinite}
 @keyframes ec-blink{0%,100%{opacity:1}50%{opacity:.3}}
-.ec-powered{margin-left:auto;font-size:.58rem;color:var(--muted);letter-spacing:.05em}
-.ec-powered span{color:var(--gold);font-weight:600}
 #ec-calendly-pane{display:none;flex:1;min-height:0;background:var(--navy2)}
 #ec-calendly-pane.visible{display:block}
 #ec-calendly-inline{width:100%;height:100%}
@@ -1301,7 +1299,6 @@ startPB(); schedule();
           Online now
         </div>
       </div>
-      <div class="ec-powered">Powered by <span>Llama 3.3 70B</span></div>
     </div>
 
     <div id="ec-calendly-pane">

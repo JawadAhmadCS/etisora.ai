@@ -1463,6 +1463,26 @@ startPB(); schedule();
     input.style.height = "38px";
     input.style.height = Math.min(input.scrollHeight, 90) + "px";
   });
+  function openCalendlyFromChat(lead){
+    const widget = document.querySelector(".calendly-inline-widget");
+    const baseUrl = (widget && widget.getAttribute("data-url")) || "https://calendly.com/infoetisora/30min";
+    try {
+      const url = new URL(baseUrl, window.location.origin);
+      const fullName = ((lead.fname || "") + " " + (lead.lname || "")).trim();
+      if (fullName) url.searchParams.set("name", fullName);
+      if (lead.email) url.searchParams.set("email", lead.email);
+      if (lead.phone) url.searchParams.set("a1", lead.phone);
+      if (lead.biz) url.searchParams.set("a2", lead.biz);
+      const finalUrl = url.toString();
+      if (window.Calendly && typeof window.Calendly.initPopupWidget === "function") {
+        window.Calendly.initPopupWidget({ url: finalUrl });
+      } else {
+        window.open(finalUrl, "_blank", "noopener,noreferrer");
+      }
+    } catch (e) {
+      window.open(baseUrl, "_blank", "noopener,noreferrer");
+    }
+  }
   submitBtn.addEventListener("click", function(){
     const fname = document.getElementById("ec-fname").value.trim();
     const lname = document.getElementById("ec-lname").value.trim();
@@ -1478,8 +1498,9 @@ startPB(); schedule();
     submitBtn.textContent = "Submitting...";
     const lead = { fname: fname, lname: lname, email: email, biz: biz, phone: phone, timestamp: new Date().toISOString() };
     console.log("Etisora Lead Captured:", lead);
+    openCalendlyFromChat(lead);
     leadCaptured = true;
-    leadForm.innerHTML = "<div style='text-align:center;padding:.5rem 0'><div style='font-size:1.4rem;margin-bottom:.4rem'>OK</div><div style='font-family:Syne,sans-serif;font-size:.85rem;font-weight:800;color:#C9A84C;'>You are booked in!</div><div style='font-size:.75rem;color:#7A8099;margin-top:.2rem;'>We will email <strong style='color:#F4F1EA'>" + email + "</strong> within 24 hours.</div></div>";
+    leadForm.innerHTML = "<div style='text-align:center;padding:.5rem 0'><div style='font-size:1.4rem;margin-bottom:.4rem'>OK</div><div style='font-family:Syne,sans-serif;font-size:.85rem;font-weight:800;color:#C9A84C;'>Opening your booking...</div><div style='font-size:.75rem;color:#7A8099;margin-top:.2rem;'>If Calendly did not open, use the contact section below.</div></div>";
     setTimeout(function(){
       messageHistory.push({ role: "user", content: "I just submitted my details. My name is " + fname + " and I am from " + (biz || "my business") + "." });
       send("Great, you are all set " + fname + "!");

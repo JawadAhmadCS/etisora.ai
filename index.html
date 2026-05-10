@@ -15,6 +15,12 @@
 body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);line-height:1.6}
 .site-header{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:.9rem 5vw;background:rgba(8,12,24,.95);border-bottom:1px solid rgba(201,168,76,.1);backdrop-filter:blur(16px)}
 .header-logo{display:flex;align-items:center;text-decoration:none}
+.header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none}
+.header-logo-3d svg{width:32px;height:38px;display:block;transition:transform .28s ease,filter .28s ease}
+.header-logo-3d:hover svg{transform:translateY(-1px) scale(1.03);filter:drop-shadow(0 8px 14px rgba(201,168,76,.24))}
+.header-logo-wordmark{display:flex;flex-direction:column;line-height:1}
+.header-logo-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:.06em;color:var(--white)}
+.header-logo-sub{font-size:.48rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .header-nav{display:flex;gap:2rem;list-style:none}
 .header-nav a{color:var(--muted);font-size:.8rem;text-decoration:none;letter-spacing:.04em;transition:color .2s}
 .header-nav a:hover{color:var(--gold)}
@@ -289,47 +295,8 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
   .svc-grid,.pricing-grid,.mktg-channels,.proof-cards,.retention-grid,.results-bar-inner{grid-template-columns:1fr}
   .cta-btns{flex-direction:column;width:100%}
   #movie-frame{height:420px}
-}
-
-.header-logo svg, .site-footer .logo-3d-svg{
-  overflow:visible;
-  transition:transform .35s ease,filter .35s ease;
-  transform-origin:left center;
-}
-.header-logo:hover svg, .site-footer .header-logo:hover .logo-3d-svg{
-  transform:translateY(-2px) scale(1.025);
-  filter:drop-shadow(0 12px 22px rgba(201,168,76,.26));
-}
-.logo-pill{
-  fill:rgba(201,168,76,.08);
-  stroke:rgba(240,208,128,.26);
-  stroke-width:1;
-}
-.logo3d-depth{
-  opacity:.48;
-  fill:#6D4F1A;
-}
-.logo3d-front{
-  paint-order:stroke fill;
-  stroke:rgba(8,12,24,.22);
-  stroke-width:.55;
-}
-.logo3d-front-ai{
-  stroke:rgba(8,12,24,.18);
-}
-.logo-spark{
-  opacity:.95;
-  filter:drop-shadow(0 0 7px rgba(255,247,210,.45));
-}
-.logo-shine-band{
-  mix-blend-mode:screen;
-  opacity:0;
-  animation:logoShine 4.5s ease-in-out infinite;
-}
-@keyframes logoShine{
-  0%,12%{opacity:0;transform:translateX(-190px) skewX(-20deg)}
-  22%,32%{opacity:.55;transform:translateX(120px) skewX(-20deg)}
-  40%,100%{opacity:0;transform:translateX(260px) skewX(-20deg)}
+  .header-logo-sub{display:none}
+  .header-logo-name{font-size:1.02rem}
 }
 </style>
 </head>
@@ -337,42 +304,17 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 
 <!-- ── HEADER ── SVG logo embedded directly — no 403, works offline -->
 <header class="site-header">
-  <a href="#" class="header-logo"><!-- WP DEPLOY: replace SVG below with <img src="https://etisora.ai/wp-content/uploads/2026/05/etisora-logo.png" alt="etisora" height="36"> --><svg class="logo-3d-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 48" height="36" aria-label="etisora.ai" style="display:block">
-    <defs>
-      <linearGradient id="goldGlossHeader" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FFE9B1"/>
-        <stop offset="48%" stop-color="#E2BD6A"/>
-        <stop offset="100%" stop-color="#A67A2A"/>
-      </linearGradient>
-      <linearGradient id="ivoryGlossHeader" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FFFFFF"/>
-        <stop offset="58%" stop-color="#F6F2E8"/>
-        <stop offset="100%" stop-color="#D7CFBE"/>
-      </linearGradient>
-      <radialGradient id="sparkHeader" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#FFF9EA"/>
-        <stop offset="100%" stop-color="#F0D080"/>
-      </radialGradient>
-      <mask id="logoTextMaskHeader">
-        <rect width="300" height="48" fill="black"/>
-        <text y="38" x="0" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" letter-spacing="-1" fill="white">etisora</text>
-        <text x="214" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="white">.</text>
-        <text x="226" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="white">ai</text>
-      </mask>
-    </defs>
-    <rect class="logo-pill" x="2.5" y="7.5" width="295" height="33" rx="16.5"/>
-    <text class="logo3d-depth" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" letter-spacing="-1">etisora</text>
-    <text class="logo3d-depth" x="214" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800">.</text>
-    <text class="logo3d-depth" x="226" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800">ai</text>
-    <text class="logo3d-front" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#goldGlossHeader)" letter-spacing="-1">etisora</text>
-    <text class="logo3d-front" x="214" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#goldGlossHeader)">.</text>
-    <text class="logo3d-front logo3d-front-ai" x="226" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#ivoryGlossHeader)">ai</text>
-    <g mask="url(#logoTextMaskHeader)">
-      <rect class="logo-shine-band" x="-220" y="-10" width="95" height="80" fill="rgba(255,255,255,.9)"/>
-    </g>
-    <circle class="logo-spark" cx="289" cy="12" r="2.5" fill="url(#sparkHeader)"/>
-    <circle class="logo-spark" cx="282.5" cy="8.2" r="1.05" fill="#FFF9E7"/>
-  </svg></a>
+  <a href="#" class="header-logo header-logo-3d" aria-label="etisora.ai">
+    <svg viewBox="0 0 36 42" aria-hidden="true">
+      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
+      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    </svg>
+    <span class="header-logo-wordmark">
+      <span class="header-logo-name">etisora</span>
+      <span class="header-logo-sub">AI Automation</span>
+    </span>
+  </a>
   <ul class="header-nav">
     <li><a href="#results">Results</a></li>
     <li><a href="#our-story">Our Story</a></li>
@@ -1194,42 +1136,17 @@ startPB(); schedule();
 
 <!-- ── FOOTER ── SVG logo embedded directly ── -->
 <footer class="site-footer">
-  <a href="#" class="header-logo"><svg class="logo-3d-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 48" height="26" aria-label="etisora.ai" style="display:block">
-    <defs>
-      <linearGradient id="goldGlossFooter" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FFE9B1"/>
-        <stop offset="48%" stop-color="#E2BD6A"/>
-        <stop offset="100%" stop-color="#A67A2A"/>
-      </linearGradient>
-      <linearGradient id="ivoryGlossFooter" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#FFFFFF"/>
-        <stop offset="58%" stop-color="#F6F2E8"/>
-        <stop offset="100%" stop-color="#D7CFBE"/>
-      </linearGradient>
-      <radialGradient id="sparkFooter" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#FFF9EA"/>
-        <stop offset="100%" stop-color="#F0D080"/>
-      </radialGradient>
-      <mask id="logoTextMaskFooter">
-        <rect width="300" height="48" fill="black"/>
-        <text y="38" x="0" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" letter-spacing="-1" fill="white">etisora</text>
-        <text x="214" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="white">.</text>
-        <text x="226" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="white">ai</text>
-      </mask>
-    </defs>
-    <rect class="logo-pill" x="2.5" y="7.5" width="295" height="33" rx="16.5"/>
-    <text class="logo3d-depth" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" letter-spacing="-1">etisora</text>
-    <text class="logo3d-depth" x="214" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800">.</text>
-    <text class="logo3d-depth" x="226" y="40" font-family="Syne,Georgia,serif" font-size="36" font-weight="800">ai</text>
-    <text class="logo3d-front" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#goldGlossFooter)" letter-spacing="-1">etisora</text>
-    <text class="logo3d-front" x="214" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#goldGlossFooter)">.</text>
-    <text class="logo3d-front logo3d-front-ai" x="226" y="38" font-family="Syne,Georgia,serif" font-size="36" font-weight="800" fill="url(#ivoryGlossFooter)">ai</text>
-    <g mask="url(#logoTextMaskFooter)">
-      <rect class="logo-shine-band" x="-220" y="-10" width="95" height="80" fill="rgba(255,255,255,.9)"/>
-    </g>
-    <circle class="logo-spark" cx="289" cy="12" r="2.5" fill="url(#sparkFooter)"/>
-    <circle class="logo-spark" cx="282.5" cy="8.2" r="1.05" fill="#FFF9E7"/>
-  </svg></a>
+  <a href="#" class="header-logo header-logo-3d" aria-label="etisora.ai">
+    <svg viewBox="0 0 36 42" aria-hidden="true">
+      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
+      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+    </svg>
+    <span class="header-logo-wordmark">
+      <span class="header-logo-name">etisora</span>
+      <span class="header-logo-sub">AI Automation</span>
+    </span>
+  </a>
   <ul class="footer-nav">
     <li><a href="#results">Results</a></li>
     <li><a href="#our-story">Our Story</a></li>

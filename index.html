@@ -353,6 +353,10 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 @keyframes ec-blink{0%,100%{opacity:1}50%{opacity:.3}}
 .ec-powered{margin-left:auto;font-size:.58rem;color:var(--muted);letter-spacing:.05em}
 .ec-powered span{color:var(--gold);font-weight:600}
+#ec-calendly-pane{display:none;flex:1;min-height:0;background:var(--navy2)}
+#ec-calendly-pane.visible{display:block}
+#ec-calendly-inline{width:100%;height:100%}
+#ec-calendly-inline .calendly-inline-widget{min-width:100%!important;height:100%!important}
 #ec-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;scroll-behavior:smooth}
 #ec-messages::-webkit-scrollbar{width:4px}
 #ec-messages::-webkit-scrollbar-track{background:transparent}
@@ -1299,6 +1303,10 @@ startPB(); schedule();
       <div class="ec-powered">Powered by <span>Llama 3.3 70B</span></div>
     </div>
 
+    <div id="ec-calendly-pane">
+      <div id="ec-calendly-inline"></div>
+    </div>
+
     <div id="ec-messages"></div>
 
     <div id="ec-typing">
@@ -1356,7 +1364,10 @@ startPB(); schedule();
   const badge = document.getElementById("ec-badge");
   const leadForm = document.getElementById("ec-lead-form");
   const submitBtn = document.getElementById("ec-submit");
-  if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn) return;
+  const calendlyPane = document.getElementById("ec-calendly-pane");
+  const calendlyInline = document.getElementById("ec-calendly-inline");
+  const footerBar = document.getElementById("ec-footer");
+  if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn || !calendlyPane || !calendlyInline || !footerBar) return;
 
   function toggleChat(){
     isOpen = !isOpen;
@@ -1469,13 +1480,26 @@ startPB(); schedule();
       if (lead.email) url.searchParams.set("email", lead.email);
       if (lead.notes) url.searchParams.set("a1", lead.notes);
       const finalUrl = url.toString();
-      if (window.Calendly && typeof window.Calendly.initPopupWidget === "function") {
-        window.Calendly.initPopupWidget({ url: finalUrl });
+
+      messages.style.display = "none";
+      typing.style.display = "none";
+      chips.style.display = "none";
+      leadForm.style.display = "none";
+      footerBar.style.display = "none";
+      calendlyPane.classList.add("visible");
+      calendlyInline.innerHTML = "";
+
+      if (window.Calendly && typeof window.Calendly.initInlineWidget === "function") {
+        window.Calendly.initInlineWidget({
+          url: finalUrl,
+          parentElement: calendlyInline
+        });
       } else {
-        window.open(finalUrl, "_blank", "noopener,noreferrer");
+        calendlyInline.innerHTML = "<iframe src=\"" + finalUrl + "\" style=\"width:100%;height:100%;border:0;\" title=\"Calendly Booking\"></iframe>";
       }
     } catch (e) {
-      window.open(baseUrl, "_blank", "noopener,noreferrer");
+      calendlyPane.classList.add("visible");
+      calendlyInline.innerHTML = "<iframe src=\"" + baseUrl + "\" style=\"width:100%;height:100%;border:0;\" title=\"Calendly Booking\"></iframe>";
     }
   }
   submitBtn.addEventListener("click", function(){
@@ -1494,10 +1518,6 @@ startPB(); schedule();
     openCalendlyFromChat(lead);
     leadCaptured = true;
     leadForm.innerHTML = "<div style='text-align:center;padding:.5rem 0'><div style='font-size:1.4rem;margin-bottom:.4rem'>OK</div><div style='font-family:Syne,sans-serif;font-size:.85rem;font-weight:800;color:#C9A84C;'>Opening your booking...</div><div style='font-size:.75rem;color:#7A8099;margin-top:.2rem;'>If Calendly did not open, use the contact section below.</div></div>";
-    setTimeout(function(){
-      messageHistory.push({ role: "user", content: "I just submitted my details. My name is " + fname + "." });
-      send("Great, you are all set " + fname + "!");
-    }, 800);
   });
 })();
 </script>

@@ -15,9 +15,10 @@
 body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);line-height:1.6}
 .site-header{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:.9rem 5vw;background:rgba(8,12,24,.95);border-bottom:1px solid rgba(201,168,76,.1);backdrop-filter:blur(16px)}
 .header-logo{display:flex;align-items:center;text-decoration:none}
-.header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none}
-.header-logo-3d svg{width:32px;height:38px;display:block;transition:transform .28s ease,filter .28s ease}
-.header-logo-3d:hover svg{transform:translateY(-1px) scale(1.03);filter:drop-shadow(0 8px 14px rgba(201,168,76,.24))}
+.header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none;perspective:800px}
+.logo-icon-3d{display:block;transform-style:preserve-3d;animation:logoIconSpin3d 6.8s ease-in-out infinite;will-change:transform}
+.header-logo-3d .logo-icon-3d svg{width:32px;height:38px;display:block;transition:filter .28s ease}
+.header-logo-3d:hover .logo-icon-3d svg{filter:drop-shadow(0 8px 14px rgba(201,168,76,.24))}
 .header-logo-wordmark{display:flex;flex-direction:column;line-height:1}
 .header-logo-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:.06em;color:var(--white)}
 .header-logo-sub{font-size:.48rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:2px}
@@ -31,6 +32,13 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .btn-outline{background:transparent;color:var(--white);font-family:'Inter',sans-serif;font-size:.88rem;font-weight:500;padding:.85rem 2rem;border:1px solid rgba(255,255,255,.15);border-radius:3px;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-block}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes logoIconSpin3d{
+  0%{transform:rotateX(0deg) rotateY(0deg)}
+  25%{transform:rotateX(7deg) rotateY(16deg)}
+  50%{transform:rotateX(0deg) rotateY(180deg)}
+  75%{transform:rotateX(-7deg) rotateY(344deg)}
+  100%{transform:rotateX(0deg) rotateY(360deg)}
+}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 @keyframes borderPulse{0%,100%{border-color:rgba(201,168,76,.18)}50%{border-color:rgba(201,168,76,.5)}}
 @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -404,11 +412,13 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 <!-- ── HEADER ── SVG logo embedded directly — no 403, works offline -->
 <header class="site-header">
   <a href="#" class="header-logo header-logo-3d" aria-label="etisora.ai">
-    <svg viewBox="0 0 36 42" aria-hidden="true">
-      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
-      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
-      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
-    </svg>
+    <span class="logo-icon-3d">
+      <svg viewBox="0 0 36 42" aria-hidden="true">
+        <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
+        <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+        <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </span>
     <span class="header-logo-wordmark">
       <span class="header-logo-name">etisora</span>
       <span class="header-logo-sub">AI Automation</span>
@@ -1236,11 +1246,13 @@ startPB(); schedule();
 <!-- ── FOOTER ── SVG logo embedded directly ── -->
 <footer class="site-footer">
   <a href="#" class="header-logo header-logo-3d" aria-label="etisora.ai">
-    <svg viewBox="0 0 36 42" aria-hidden="true">
-      <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
-      <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
-      <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
-    </svg>
+    <span class="logo-icon-3d">
+      <svg viewBox="0 0 36 42" aria-hidden="true">
+        <path d="M18 2 C12 2 6 6 4 11 C2 14 2 17 3 20 C2 23 2 26 4 29 C5 33 9 37 13 38 C15 40 17 41 18 41 C19 41 21 40 23 38 C27 37 31 33 32 29 C34 26 34 23 33 20 C34 17 34 14 32 11 C30 6 24 2 18 2 Z" fill="rgba(201,168,76,0.1)" stroke="#C9A84C" stroke-width="1.3"/>
+        <circle cx="18" cy="9" r="2.2" fill="#C9A84C"/><circle cx="9" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="27" cy="16" r="1.8" fill="#C9A84C" opacity="0.75"/><circle cx="18" cy="21" r="2.5" fill="#C9A84C"/>
+        <line x1="18" y1="9" x2="9" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="18" y1="9" x2="27" y2="16" stroke="#C9A84C" stroke-width="0.8" opacity="0.55"/><line x1="9" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/><line x1="27" y1="16" x2="18" y2="21" stroke="#C9A84C" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </span>
     <span class="header-logo-wordmark">
       <span class="header-logo-name">etisora</span>
       <span class="header-logo-sub">AI Automation</span>

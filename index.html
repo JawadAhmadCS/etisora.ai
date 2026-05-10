@@ -1318,23 +1318,17 @@ startPB(); schedule();
   </div>
 </div>
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-<script src="./env.js"></script>
 
 <!-- ── SCRIPTS ── -->
 <script>
 (function(){
-  const runtimeEnv = (window.ETISORA_ENV || {});
-  const storedKey = (function(){ try { return localStorage.getItem("GROQ_API_KEY") || ""; } catch (e) { return ""; } })();
   const CONFIG = {
-    apiKey: runtimeEnv.GROQ_API_KEY || storedKey || "",
     systemPrompt: "You are Sora, the friendly AI assistant for Etisora. Keep replies warm, concise, and practical. Help visitors understand AI automation, lead capture, and strategy calls. Ask about their business and pain points. After 2-3 exchanges, invite them to book a free strategy call and submit details in the form below. Keep replies under 80 words.",
     greeting: "Hey there! I am Sora, Etisora's AI assistant.\n\nI help businesses capture more leads and grow with AI.\n\nWhat kind of business do you run?",
     initialChips: ["Restaurant / Hospitality","Real Estate","Health & Wellness","Home Services","Something else"],
     showFormAfterMessages: 3,
-    model: runtimeEnv.GROQ_MODEL || "llama-3.3-70b-versatile"
+    model: "llama-3.3-70b-versatile"
   };
-  let envLoaded = false;
-  let envLoadAttempted = false;
   let isOpen = false;
   let isTyping = false;
   let messageHistory = [];
@@ -1351,58 +1345,6 @@ startPB(); schedule();
   const leadForm = document.getElementById("ec-lead-form");
   const submitBtn = document.getElementById("ec-submit");
   if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn) return;
-
-  function parseEnv(text){
-    const env = {};
-    text.replace(/^\uFEFF/, "").split(/\r?\n/).forEach(function(line){
-      const t = line.trim();
-      if (!t || t[0] === "#") return;
-      const idx = t.indexOf("=");
-      if (idx <= 0) return;
-      const key = t.slice(0, idx).trim().replace(/^\uFEFF/, "");
-      const val = t.slice(idx + 1).trim().replace(/^['"]|['"]$/g, "");
-      env[key] = val;
-    });
-    return env;
-  }
-
-  async function loadEnvConfig(){
-    if (envLoaded) return true;
-    if (envLoadAttempted) return false;
-    envLoadAttempted = true;
-    if (window.ETISORA_ENV && window.ETISORA_ENV.GROQ_API_KEY) {
-      CONFIG.apiKey = window.ETISORA_ENV.GROQ_API_KEY;
-      CONFIG.model = window.ETISORA_ENV.GROQ_MODEL || CONFIG.model;
-      envLoaded = true;
-      return true;
-    }
-    const envPaths = [".env", "./.env", "/.env"];
-    for (let i = 0; i < envPaths.length; i++) {
-      const p = envPaths[i];
-      try {
-        const res = await fetch(p, { cache: "no-store" });
-        if (!res.ok) continue;
-        const text = await res.text();
-        const env = parseEnv(text);
-        if (env.GROQ_API_KEY) CONFIG.apiKey = env.GROQ_API_KEY;
-        if (env.GROQ_MODEL) CONFIG.model = env.GROQ_MODEL;
-        if (CONFIG.apiKey) {
-          try { localStorage.setItem("GROQ_API_KEY", CONFIG.apiKey); } catch (e) {}
-          envLoaded = true;
-          return true;
-        }
-      } catch (err) {
-        console.warn("Could not load " + p + " in browser:", err);
-      }
-    }
-    const fallbackKey = (function(){ try { return localStorage.getItem("GROQ_API_KEY") || ""; } catch (e) { return ""; } })();
-    if (fallbackKey) {
-      CONFIG.apiKey = fallbackKey;
-      envLoaded = true;
-      return true;
-    }
-    return false;
-  }
 
   function toggleChat(){
     isOpen = !isOpen;
@@ -1468,24 +1410,11 @@ startPB(); schedule();
     input.value = "";
     input.style.height = "38px";
     setTyping(true);
-    if (!CONFIG.apiKey) await loadEnvConfig();
-    if (!CONFIG.apiKey) {
-      const manualKey = window.prompt("Enter your GROQ API key (starts with gsk_):", "");
-      if (manualKey && manualKey.trim()) {
-        CONFIG.apiKey = manualKey.trim();
-        try { localStorage.setItem("GROQ_API_KEY", CONFIG.apiKey); } catch (e) {}
-      }
-    }
-    if (!CONFIG.apiKey) {
-      setTyping(false);
-      addBotMessage("Chat API key missing. Add GROQ_API_KEY in env.js or .env.");
-      return;
-    }
     try {
       const payloadMessages = [{ role: "system", content: CONFIG.systemPrompt }].concat(messageHistory);
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + CONFIG.apiKey },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: CONFIG.model, messages: payloadMessages, temperature: 0.6, max_tokens: 300 })
       });
       const data = await response.json();

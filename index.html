@@ -11,7 +11,7 @@
 <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#C9A84C;--gold2:#F0D080;--navy:#080C18;--navy2:#0F1525;--white:#F4F1EA;--muted:#7A8099;--green:#22c55e}
+:root{--gold:#C9A84C;--gold2:#F0D080;--navy:#080C18;--navy2:#0F1525;--white:#F4F1EA;--muted:#7A8099;--green:#22c55e;--red:#ef4444;--chat-w:380px;--chat-h:560px}
 body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);line-height:1.6}
 .site-header{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:.9rem 5vw;background:rgba(8,12,24,.95);border-bottom:1px solid rgba(201,168,76,.1);backdrop-filter:blur(16px)}
 .header-logo{display:flex;align-items:center;text-decoration:none}
@@ -297,6 +297,105 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
   #movie-frame{height:420px}
   .header-logo-sub{display:none}
   .header-logo-name{font-size:1.02rem}
+}
+
+/* Chatbot widget */
+#ec-launcher{
+  position:fixed;bottom:28px;right:28px;z-index:99999;width:60px;height:60px;border-radius:50%;
+  background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(201,168,76,.45),0 0 0 0 rgba(201,168,76,.3);transition:transform .25s,background .25s,box-shadow .25s;
+  animation:ec-pulse-ring 2.5s infinite
+}
+#ec-launcher:hover{transform:scale(1.1);background:var(--gold2)}
+#ec-launcher svg{transition:transform .3s,opacity .3s}
+#ec-launcher .ec-close-icon{position:absolute;opacity:0;transform:rotate(-90deg)}
+#ec-launcher.open .ec-chat-icon{opacity:0;transform:rotate(90deg)}
+#ec-launcher.open .ec-close-icon{opacity:1;transform:rotate(0)}
+#ec-launcher.open{background:#1a2240;box-shadow:0 4px 24px rgba(0,0,0,.4);animation:none}
+#ec-badge{
+  position:absolute;top:-4px;right:-4px;width:20px;height:20px;background:var(--red);border-radius:50%;border:2px solid var(--navy);
+  font-family:'Inter',sans-serif;font-size:.6rem;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;transition:opacity .3s,transform .3s
+}
+#ec-badge.hidden{opacity:0;transform:scale(0)}
+@keyframes ec-pulse-ring{
+  0%{box-shadow:0 4px 24px rgba(201,168,76,.45),0 0 0 0 rgba(201,168,76,.35)}
+  70%{box-shadow:0 4px 24px rgba(201,168,76,.45),0 0 0 14px rgba(201,168,76,0)}
+  100%{box-shadow:0 4px 24px rgba(201,168,76,.45),0 0 0 0 rgba(201,168,76,0)}
+}
+#ec-window{
+  position:fixed;bottom:100px;right:28px;z-index:99998;width:var(--chat-w);height:var(--chat-h);background:var(--navy2);
+  border:1px solid rgba(201,168,76,.22);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 20px 80px rgba(0,0,0,.6),0 0 0 1px rgba(201,168,76,.06);transform:scale(.9) translateY(20px);opacity:0;pointer-events:none;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s
+}
+#ec-window.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+#ec-header{background:var(--navy);border-bottom:1px solid rgba(201,168,76,.12);padding:.9rem 1.1rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.ec-avatar{
+  width:38px;height:38px;border-radius:50%;background:rgba(201,168,76,.12);border:1.5px solid rgba(201,168,76,.35);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:800;color:var(--gold);position:relative
+}
+.ec-avatar::after{content:'';position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--green);border-radius:50%;border:1.5px solid var(--navy)}
+#ec-header-text .ec-name{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:800;color:var(--white)}
+#ec-header-text .ec-status{font-size:.68rem;color:var(--green);display:flex;align-items:center;gap:.3rem}
+.ec-status-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:ec-blink 1.8s infinite}
+@keyframes ec-blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ec-powered{margin-left:auto;font-size:.58rem;color:var(--muted);letter-spacing:.05em}
+.ec-powered span{color:var(--gold);font-weight:600}
+#ec-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;scroll-behavior:smooth}
+#ec-messages::-webkit-scrollbar{width:4px}
+#ec-messages::-webkit-scrollbar-track{background:transparent}
+#ec-messages::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:4px}
+.ec-msg{display:flex;gap:.5rem;align-items:flex-end;animation:ec-msg-in .25s ease both}
+@keyframes ec-msg-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.ec-msg.user{flex-direction:row-reverse}
+.ec-bubble{max-width:82%;padding:.65rem .9rem;border-radius:14px;font-family:'Inter',sans-serif;font-size:.82rem;line-height:1.6;font-weight:400}
+.ec-msg.bot .ec-bubble{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.12);color:var(--white);border-bottom-left-radius:4px}
+.ec-msg.user .ec-bubble{background:var(--gold);color:var(--navy);font-weight:500;border-bottom-right-radius:4px}
+.ec-time{font-size:.6rem;color:var(--muted);padding:0 .2rem .1rem;flex-shrink:0}
+#ec-typing{display:none;align-items:flex-end;gap:.5rem}
+#ec-typing.visible{display:flex}
+.ec-dots{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.12);border-radius:14px;border-bottom-left-radius:4px;padding:.65rem .9rem;display:flex;gap:3px;align-items:center}
+.ec-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:ec-bounce .9s ease infinite}
+.ec-dot:nth-child(2){animation-delay:.15s}
+.ec-dot:nth-child(3){animation-delay:.3s}
+@keyframes ec-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+#ec-chips{padding:.35rem 1rem .4rem;display:flex;gap:.4rem;flex-wrap:wrap;flex-shrink:0;min-height:0;overflow:hidden;transition:max-height .3s}
+.ec-chip{
+  font-family:'Inter',sans-serif;font-size:.72rem;font-weight:500;color:var(--gold);background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.28);border-radius:100px;padding:.28rem .75rem;cursor:pointer;transition:background .2s,transform .15s;white-space:nowrap
+}
+.ec-chip:hover{background:rgba(201,168,76,.22);transform:translateY(-1px)}
+#ec-footer{border-top:1px solid rgba(201,168,76,.1);padding:.75rem;display:flex;gap:.5rem;align-items:center;background:var(--navy);flex-shrink:0}
+#ec-input{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:8px;padding:.55rem .8rem;font-family:'Inter',sans-serif;
+  font-size:.82rem;color:var(--white);outline:none;transition:border-color .2s;resize:none;height:38px;max-height:90px;overflow-y:auto
+}
+#ec-input::placeholder{color:var(--muted)}
+#ec-input:focus{border-color:rgba(201,168,76,.4)}
+#ec-send{
+  width:38px;height:38px;border-radius:8px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .2s,transform .15s
+}
+#ec-send:hover{background:var(--gold2);transform:scale(1.05)}
+#ec-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
+#ec-send svg{stroke:var(--navy)}
+#ec-lead-form{display:none;flex-direction:column;gap:.6rem;padding:.8rem 1rem;background:rgba(201,168,76,.04);border-top:1px solid rgba(201,168,76,.12);flex-shrink:0}
+#ec-lead-form.visible{display:flex}
+#ec-lead-form .ec-form-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--white)}
+#ec-lead-form .ec-form-row{display:flex;gap:.5rem}
+.ec-field{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:6px;padding:.5rem .7rem;
+  font-family:'Inter',sans-serif;font-size:.78rem;color:var(--white);outline:none;transition:border-color .2s
+}
+.ec-field::placeholder{color:var(--muted)}
+.ec-field:focus{border-color:rgba(201,168,76,.4)}
+#ec-submit{
+  width:100%;background:var(--gold);color:var(--navy);font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;padding:.6rem;border:none;border-radius:6px;cursor:pointer;transition:background .2s;letter-spacing:.03em
+}
+#ec-submit:hover{background:var(--gold2)}
+#ec-submit:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:480px){
+  #ec-window{width:calc(100vw - 20px);right:10px;bottom:90px;height:70vh;max-height:560px}
 }
 </style>
 </head>
@@ -1160,9 +1259,266 @@ startPB(); schedule();
 </footer>
 
 <!-- ── CALENDLY SCRIPT ── -->
+<div id="etisora-chat-widget">
+  <button id="ec-launcher" aria-label="Chat with Etisora">
+    <span id="ec-badge">1</span>
+    <svg class="ec-chat-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#080C18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    <svg class="ec-close-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F4F1EA" stroke-width="2.5" stroke-linecap="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+
+  <div id="ec-window" role="dialog" aria-label="Etisora chat">
+    <div id="ec-header">
+      <div class="ec-avatar">E</div>
+      <div id="ec-header-text">
+        <div class="ec-name">Etisora AI</div>
+        <div class="ec-status">
+          <span class="ec-status-dot"></span>
+          Online now
+        </div>
+      </div>
+      <div class="ec-powered">Powered by <span>Llama 3.3 70B</span></div>
+    </div>
+
+    <div id="ec-messages"></div>
+
+    <div id="ec-typing">
+      <div class="ec-dots">
+        <div class="ec-dot"></div>
+        <div class="ec-dot"></div>
+        <div class="ec-dot"></div>
+      </div>
+    </div>
+
+    <div id="ec-chips"></div>
+
+    <div id="ec-lead-form">
+      <div class="ec-form-title">Get your free AI audit</div>
+      <div class="ec-form-row">
+        <input class="ec-field" id="ec-fname" placeholder="First name" type="text">
+        <input class="ec-field" id="ec-lname" placeholder="Last name" type="text">
+      </div>
+      <input class="ec-field" id="ec-email" placeholder="Work email" type="email">
+      <input class="ec-field" id="ec-biz" placeholder="Business name" type="text">
+      <input class="ec-field" id="ec-phone" placeholder="Phone (optional)" type="tel">
+      <button id="ec-submit">Book My Free Strategy Call</button>
+    </div>
+
+    <div id="ec-footer">
+      <textarea id="ec-input" placeholder="Ask about AI automation..." rows="1"></textarea>
+      <button id="ec-send" aria-label="Send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
 <!-- ── SCRIPTS ── -->
+<script>
+(function(){
+  const CONFIG = {
+    apiKey: "",
+    systemPrompt: "You are Sora, the friendly AI assistant for Etisora. Keep replies warm, concise, and practical. Help visitors understand AI automation, lead capture, and strategy calls. Ask about their business and pain points. After 2-3 exchanges, invite them to book a free strategy call and submit details in the form below. Keep replies under 80 words.",
+    greeting: "Hey there! I am Sora, Etisora's AI assistant.\n\nI help businesses capture more leads and grow with AI.\n\nWhat kind of business do you run?",
+    initialChips: ["Restaurant / Hospitality","Real Estate","Health & Wellness","Home Services","Something else"],
+    showFormAfterMessages: 3,
+    model: "llama-3.3-70b-versatile"
+  };
+  let envLoaded = false;
+  let envLoadAttempted = false;
+  let isOpen = false;
+  let isTyping = false;
+  let messageHistory = [];
+  let botMessageCount = 0;
+  let leadCaptured = false;
+  const launcher = document.getElementById("ec-launcher");
+  const windowEl = document.getElementById("ec-window");
+  const messages = document.getElementById("ec-messages");
+  const typing = document.getElementById("ec-typing");
+  const chips = document.getElementById("ec-chips");
+  const input = document.getElementById("ec-input");
+  const sendBtn = document.getElementById("ec-send");
+  const badge = document.getElementById("ec-badge");
+  const leadForm = document.getElementById("ec-lead-form");
+  const submitBtn = document.getElementById("ec-submit");
+  if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn) return;
+
+  function parseEnv(text){
+    const env = {};
+    text.replace(/^\uFEFF/, "").split(/\r?\n/).forEach(function(line){
+      const t = line.trim();
+      if (!t || t[0] === "#") return;
+      const idx = t.indexOf("=");
+      if (idx <= 0) return;
+      const key = t.slice(0, idx).trim().replace(/^\uFEFF/, "");
+      const val = t.slice(idx + 1).trim().replace(/^['"]|['"]$/g, "");
+      env[key] = val;
+    });
+    return env;
+  }
+
+  async function loadEnvConfig(){
+    if (envLoaded) return true;
+    if (envLoadAttempted) return false;
+    envLoadAttempted = true;
+    const envPaths = [".env", "./.env", "/.env"];
+    for (let i = 0; i < envPaths.length; i++) {
+      const p = envPaths[i];
+      try {
+        const res = await fetch(p, { cache: "no-store" });
+        if (!res.ok) continue;
+        const text = await res.text();
+        const env = parseEnv(text);
+        if (env.GROQ_API_KEY) CONFIG.apiKey = env.GROQ_API_KEY;
+        if (env.GROQ_MODEL) CONFIG.model = env.GROQ_MODEL;
+        if (CONFIG.apiKey) {
+          envLoaded = true;
+          return true;
+        }
+      } catch (err) {
+        console.warn("Could not load " + p + " in browser:", err);
+      }
+    }
+    return false;
+  }
+
+  function toggleChat(){
+    isOpen = !isOpen;
+    launcher.classList.toggle("open", isOpen);
+    windowEl.classList.toggle("open", isOpen);
+    if (isOpen) {
+      badge.classList.add("hidden");
+      if (messages.children.length === 0) setTimeout(function(){ addBotMessage(CONFIG.greeting, CONFIG.initialChips); }, 300);
+      setTimeout(function(){ input.focus(); }, 350);
+    }
+  }
+  launcher.addEventListener("click", toggleChat);
+  function timestamp(){ return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); }
+  function addBotMessage(text, chipList){
+    botMessageCount++;
+    chips.innerHTML = "";
+    const row = document.createElement("div");
+    row.className = "ec-msg bot";
+    const bubble = document.createElement("div");
+    bubble.className = "ec-bubble";
+    bubble.innerHTML = text.replace(/\n/g, "<br>");
+    const time = document.createElement("span");
+    time.className = "ec-time";
+    time.textContent = timestamp();
+    row.appendChild(bubble);
+    row.appendChild(time);
+    messages.appendChild(row);
+    scrollBottom();
+    if (chipList && chipList.length) setTimeout(function(){ renderChips(chipList); }, 200);
+    if (botMessageCount >= CONFIG.showFormAfterMessages && !leadCaptured) setTimeout(function(){ leadForm.classList.add("visible"); scrollBottom(); }, 600);
+  }
+  function addUserMessage(text){
+    const row = document.createElement("div");
+    row.className = "ec-msg user";
+    const bubble = document.createElement("div");
+    bubble.className = "ec-bubble";
+    bubble.textContent = text;
+    const time = document.createElement("span");
+    time.className = "ec-time";
+    time.textContent = timestamp();
+    row.appendChild(time);
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    scrollBottom();
+  }
+  function scrollBottom(){ setTimeout(function(){ messages.scrollTop = messages.scrollHeight; }, 50); }
+  function renderChips(list){
+    chips.innerHTML = "";
+    list.forEach(function(label){
+      const btn = document.createElement("button");
+      btn.className = "ec-chip";
+      btn.textContent = label;
+      btn.addEventListener("click", function(){ chips.innerHTML = ""; send(label); });
+      chips.appendChild(btn);
+    });
+  }
+  async function send(text){
+    const msg = text.trim();
+    if (!msg || isTyping) return;
+    chips.innerHTML = "";
+    addUserMessage(msg);
+    messageHistory.push({ role: "user", content: msg });
+    input.value = "";
+    input.style.height = "38px";
+    setTyping(true);
+    if (!CONFIG.apiKey) await loadEnvConfig();
+    if (!CONFIG.apiKey) {
+      setTyping(false);
+      addBotMessage("Chat API key missing. Add GROQ_API_KEY in .env. If opening HTML directly, run through a local server so .env can be fetched.");
+      return;
+    }
+    try {
+      const payloadMessages = [{ role: "system", content: CONFIG.systemPrompt }].concat(messageHistory);
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + CONFIG.apiKey },
+        body: JSON.stringify({ model: CONFIG.model, messages: payloadMessages, temperature: 0.6, max_tokens: 300 })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error((data && data.error && data.error.message) || "API request failed");
+      const reply = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if (!reply) throw new Error("No content in response");
+      messageHistory.push({ role: "assistant", content: reply });
+      setTyping(false);
+      addBotMessage(reply);
+    } catch (err) {
+      console.error("Etisora chatbot error:", err);
+      setTyping(false);
+      addBotMessage("Sorry, I hit a snag. Please email info@etisora.ai and we will get right back to you.");
+    }
+  }
+  function setTyping(state){
+    isTyping = state;
+    typing.classList.toggle("visible", state);
+    sendBtn.disabled = state;
+    if (state) scrollBottom();
+  }
+  sendBtn.addEventListener("click", function(){ send(input.value); });
+  input.addEventListener("keydown", function(e){
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send(input.value);
+    }
+  });
+  input.addEventListener("input", function(){
+    input.style.height = "38px";
+    input.style.height = Math.min(input.scrollHeight, 90) + "px";
+  });
+  submitBtn.addEventListener("click", function(){
+    const fname = document.getElementById("ec-fname").value.trim();
+    const lname = document.getElementById("ec-lname").value.trim();
+    const email = document.getElementById("ec-email").value.trim();
+    const biz = document.getElementById("ec-biz").value.trim();
+    const phone = document.getElementById("ec-phone").value.trim();
+    if (!fname || !email) {
+      document.getElementById("ec-fname").style.borderColor = fname ? "" : "rgba(239,68,68,.6)";
+      document.getElementById("ec-email").style.borderColor = email ? "" : "rgba(239,68,68,.6)";
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+    const lead = { fname: fname, lname: lname, email: email, biz: biz, phone: phone, timestamp: new Date().toISOString() };
+    console.log("Etisora Lead Captured:", lead);
+    leadCaptured = true;
+    leadForm.innerHTML = "<div style='text-align:center;padding:.5rem 0'><div style='font-size:1.4rem;margin-bottom:.4rem'>OK</div><div style='font-family:Syne,sans-serif;font-size:.85rem;font-weight:800;color:#C9A84C;'>You are booked in!</div><div style='font-size:.75rem;color:#7A8099;margin-top:.2rem;'>We will email <strong style='color:#F4F1EA'>" + email + "</strong> within 24 hours.</div></div>";
+    setTimeout(function(){
+      messageHistory.push({ role: "user", content: "I just submitted my details. My name is " + fname + " and I am from " + (biz || "my business") + "." });
+      send("Great, you are all set " + fname + "!");
+    }, 800);
+  });
+})();
+</script>
 <script>
 (function(){
   var c=document.getElementById("heroCanvas"),ctx=c.getContext("2d"),W,H,pts=[];

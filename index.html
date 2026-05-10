@@ -16,8 +16,8 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .site-header{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;align-items:center;justify-content:space-between;padding:.9rem 5vw;background:rgba(8,12,24,.95);border-bottom:1px solid rgba(201,168,76,.1);backdrop-filter:blur(16px)}
 .header-logo{display:flex;align-items:center;text-decoration:none}
 .header-logo-3d{display:flex;align-items:center;gap:.6rem;text-decoration:none;perspective:1200px}
-.logo-icon-3d{display:block;transform-style:preserve-3d;animation:logoIconSpin3d 10.2s linear infinite;will-change:transform}
-.header-logo-3d .logo-icon-3d svg{width:32px;height:38px;display:block;transition:filter .28s ease}
+.logo-icon-3d{display:block;transform-style:preserve-3d;animation:logoIconSpinZ 15s linear infinite;will-change:transform}
+.header-logo-3d .logo-icon-3d svg{width:32px;height:38px;display:block;transition:filter .28s ease;transform-origin:center center;animation:logoIconTilt 4.8s ease-in-out infinite}
 .header-logo-3d:hover .logo-icon-3d svg{filter:drop-shadow(0 8px 14px rgba(201,168,76,.24))}
 .header-logo-wordmark{display:flex;flex-direction:column;line-height:1}
 .header-logo-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;letter-spacing:.06em;color:var(--white)}
@@ -32,9 +32,16 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .btn-outline{background:transparent;color:var(--white);font-family:'Inter',sans-serif;font-size:.88rem;font-weight:500;padding:.85rem 2rem;border:1px solid rgba(255,255,255,.15);border-radius:3px;cursor:pointer;transition:all .25s;text-decoration:none;display:inline-block}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-@keyframes logoIconSpin3d{
-  from{transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg)}
-  to{transform:rotateX(360deg) rotateY(720deg) rotateZ(360deg)}
+@keyframes logoIconSpinZ{
+  from{transform:rotateZ(0deg)}
+  to{transform:rotateZ(360deg)}
+}
+@keyframes logoIconTilt{
+  0%{transform:rotateX(-12deg) rotateY(-80deg) scale(0.98)}
+  25%{transform:rotateX(10deg) rotateY(72deg) scale(1)}
+  50%{transform:rotateX(14deg) rotateY(-76deg) scale(0.99)}
+  75%{transform:rotateX(-10deg) rotateY(78deg) scale(1)}
+  100%{transform:rotateX(-12deg) rotateY(-80deg) scale(0.98)}
 }
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 @keyframes borderPulse{0%,100%{border-color:rgba(201,168,76,.18)}50%{border-color:rgba(201,168,76,.5)}}

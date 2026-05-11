@@ -121,6 +121,8 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .sora-callout{display:flex;align-items:flex-start;gap:1rem;margin-bottom:4rem;padding:1.25rem 1.5rem;border-left:2px solid var(--gold);background:rgba(201,168,76,.04)}
 .sora-word{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--gold);white-space:nowrap;padding-top:2px}
 .sora-meaning{font-size:.85rem;color:var(--muted);line-height:1.72}
+#our-story .sec-tag,#our-story .sec-title{text-align:right;display:block}
+#our-story .sora-callout{border-left:none;border-right:2px solid var(--gold);text-align:right;flex-direction:row-reverse}
 .sora-meaning strong{color:var(--white);font-weight:500}
 .pillars-wrap{display:grid;grid-template-columns:repeat(3,1fr);position:relative;margin-bottom:5rem}
 .pillars-wrap::before,.pillars-wrap::after{content:"";position:absolute;top:10%;bottom:10%;width:1px;background:linear-gradient(to bottom,transparent,rgba(201,168,76,.2),transparent)}
@@ -136,16 +138,16 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .promise-label{font-size:.67rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
 .promise-headline{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;line-height:1.15;margin-bottom:3rem}
 .promise-headline span{color:var(--gold)}
-.letter-row{display:grid;grid-template-columns:64px 1fr;align-items:baseline;padding:1.4rem 0;border-bottom:1px solid rgba(255,255,255,.05);position:relative;transition:all .3s;cursor:default}
+.letter-row{display:grid;grid-template-columns:1fr 64px;align-items:baseline;padding:1.4rem 0;border-bottom:1px solid rgba(255,255,255,.05);position:relative;transition:all .3s;cursor:default}
 .letter-row:first-child{border-top:1px solid rgba(255,255,255,.05)}
 .letter-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:rgba(201,168,76,.04);transition:width .4s}
 .letter-row:hover::before{width:100%}
-.letter-char{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--gold);line-height:1;position:relative;z-index:1}
+.letter-char{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--gold);line-height:1;position:relative;z-index:1;justify-self:end;text-align:right}
 .letter-row:hover .letter-char{color:var(--gold2)}
-.letter-content{position:relative;z-index:1}
+.letter-content{position:relative;z-index:1;text-align:right}
 .letter-word{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.2rem}
 .letter-desc{font-size:.82rem;color:var(--muted);line-height:1.68}
-.sora-tag{display:inline-flex;align-items:center;gap:.35rem;margin-top:.4rem;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#C9A84C;background:rgba(201,168,76,.15);padding:.2rem .6rem;border-radius:100px}
+.sora-tag{display:inline-flex;align-items:center;gap:.35rem;margin-top:.4rem;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#C9A84C;background:rgba(201,168,76,.15);padding:.2rem .6rem;border-radius:100px;float:right}
 /* AGENTS */
 .agents-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center}
 .agents-headline{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:800;line-height:1.1;margin-bottom:1rem}
@@ -404,7 +406,18 @@ body{font-family:'Inter',sans-serif;background:var(--navy);color:var(--white);li
 .ec-field::placeholder{color:var(--muted)}
 .ec-field:focus{border-color:rgba(201,168,76,.4)}
 #ec-notes{width:calc(100% + 8px);margin-left:-4px;margin-right:-4px;min-height:92px;resize:vertical}
-#ec-turnstile{display:flex;justify-content:center;padding:.2rem 0}
+#ec-captcha-wrap{
+  display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center
+}
+#ec-captcha-canvas{
+  width:100%;height:52px;border:1px solid rgba(201,168,76,.2);border-radius:6px;
+  background:#0f1730;display:block
+}
+#ec-captcha-refresh{
+  border:1px solid rgba(201,168,76,.28);background:rgba(201,168,76,.12);color:var(--white);
+  border-radius:5px;cursor:pointer;font-size:.7rem;padding:.4rem .55rem;height:52px
+}
+#ec-captcha-refresh:hover{background:rgba(201,168,76,.2)}
 #ec-captcha-error{display:none;font-size:.72rem;color:#ef4444;text-align:center}
 #ec-captcha-error.visible{display:block}
 #ec-submit{
@@ -1330,7 +1343,11 @@ startPB(); schedule();
       <input class="ec-field" id="ec-biz" placeholder="Business name" type="text">
       <input class="ec-field" id="ec-phone" placeholder="Phone" type="tel">
       <textarea class="ec-field" id="ec-notes" placeholder="Notes" rows="3"></textarea>
-      <div id="ec-turnstile"></div>
+      <div id="ec-captcha-wrap">
+        <canvas id="ec-captcha-canvas" width="220" height="52" aria-label="CAPTCHA image"></canvas>
+        <button type="button" id="ec-captcha-refresh">Refresh</button>
+      </div>
+      <input class="ec-field" id="ec-captcha-input" placeholder="Type text from image" type="text" autocomplete="off">
       <div id="ec-captcha-error">Please complete CAPTCHA verification.</div>
       <button id="ec-submit">Book My Free Strategy Call</button>
     </div>
@@ -1346,7 +1363,6 @@ startPB(); schedule();
   </div>
 </div>
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 
 <!-- â”€â”€ SCRIPTS â”€â”€ -->
 <script>
@@ -1376,51 +1392,85 @@ startPB(); schedule();
   const calendlyPane = document.getElementById("ec-calendly-pane");
   const calendlyInline = document.getElementById("ec-calendly-inline");
   const footerBar = document.getElementById("ec-footer");
-  const captchaBox = document.getElementById("ec-turnstile");
+  const captchaCanvas = document.getElementById("ec-captcha-canvas");
+  const captchaRefresh = document.getElementById("ec-captcha-refresh");
+  const captchaInput = document.getElementById("ec-captcha-input");
   const captchaError = document.getElementById("ec-captcha-error");
-  if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn || !calendlyPane || !calendlyInline || !footerBar || !captchaBox || !captchaError) return;
-  const CAPTCHA_SITE_KEY = "0x4AAAAAADMu7CN9CxTFV7oO";
-  let captchaToken = "";
-  let captchaWidgetId = null;
+  if (!launcher || !windowEl || !messages || !typing || !chips || !input || !sendBtn || !badge || !leadForm || !submitBtn || !calendlyPane || !calendlyInline || !footerBar || !captchaCanvas || !captchaRefresh || !captchaInput || !captchaError) return;
+  const captchaCtx = captchaCanvas.getContext("2d");
+  if (!captchaCtx) return;
+  let captchaAnswer = "";
 
-  function initCaptchaWidget(){
-    if (!window.turnstile || captchaWidgetId !== null) return;
-    captchaWidgetId = window.turnstile.render(captchaBox, {
-      sitekey: CAPTCHA_SITE_KEY,
-      theme: "dark",
-      callback: function(token){
-        captchaToken = token || "";
-        captchaError.classList.remove("visible");
-      },
-      "expired-callback": function(){ captchaToken = ""; },
-      "error-callback": function(){ captchaToken = ""; }
-    });
+  function generateCaptchaText(len){
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let out = "";
+    for (let i = 0; i < len; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+    return out;
   }
 
-  function ensureCaptchaWidget(){
-    if (captchaWidgetId !== null) return;
-    initCaptchaWidget();
-    if (captchaWidgetId === null) {
-      const tmr = setInterval(function(){
-        initCaptchaWidget();
-        if (captchaWidgetId !== null) clearInterval(tmr);
-      }, 500);
-      setTimeout(function(){ clearInterval(tmr); }, 10000);
-    }
+  function rand(min, max){
+    return Math.random() * (max - min) + min;
   }
 
-  async function verifyCaptchaToken(token){
-    try {
-      const res = await fetch("/api/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: token })
-      });
-      const data = await res.json();
-      return !!(res.ok && data && data.success);
-    } catch (e) {
-      return false;
+  function drawCaptcha(text){
+    const w = captchaCanvas.width;
+    const h = captchaCanvas.height;
+    captchaCtx.clearRect(0, 0, w, h);
+
+    const bg = captchaCtx.createLinearGradient(0, 0, w, h);
+    bg.addColorStop(0, "#0f1730");
+    bg.addColorStop(1, "#151f3e");
+    captchaCtx.fillStyle = bg;
+    captchaCtx.fillRect(0, 0, w, h);
+
+    for (let i = 0; i < 7; i++) {
+      captchaCtx.beginPath();
+      captchaCtx.strokeStyle = "rgba(201,168,76," + rand(0.14, 0.32).toFixed(2) + ")";
+      captchaCtx.lineWidth = rand(0.8, 1.6);
+      captchaCtx.moveTo(rand(0, w), rand(0, h));
+      captchaCtx.bezierCurveTo(rand(0, w), rand(0, h), rand(0, w), rand(0, h), rand(0, w), rand(0, h));
+      captchaCtx.stroke();
     }
+
+    for (let i = 0; i < 65; i++) {
+      captchaCtx.fillStyle = "rgba(255,255,255," + rand(0.05, 0.18).toFixed(2) + ")";
+      captchaCtx.fillRect(rand(0, w), rand(0, h), rand(0.8, 2.4), rand(0.8, 2.4));
+    }
+
+    captchaCtx.textBaseline = "middle";
+    captchaCtx.textAlign = "center";
+    const step = w / (text.length + 1);
+    for (let i = 0; i < text.length; i++) {
+      const ch = text.charAt(i);
+      const x = step * (i + 1) + rand(-3, 3);
+      const y = h / 2 + rand(-5, 5);
+      const angle = rand(-0.33, 0.33);
+      captchaCtx.save();
+      captchaCtx.translate(x, y);
+      captchaCtx.rotate(angle);
+      captchaCtx.font = "700 " + Math.floor(rand(24, 30)) + "px Syne, sans-serif";
+      captchaCtx.fillStyle = i % 2 ? "#d3b46a" : "#c9a84c";
+      captchaCtx.shadowColor = "rgba(0,0,0,.45)";
+      captchaCtx.shadowBlur = 2;
+      captchaCtx.fillText(ch, 0, 0);
+      captchaCtx.restore();
+    }
+
+    captchaCtx.beginPath();
+    captchaCtx.strokeStyle = "rgba(201,168,76,.55)";
+    captchaCtx.lineWidth = 1.25;
+    captchaCtx.moveTo(8, rand(18, 34));
+    captchaCtx.quadraticCurveTo(w / 2, rand(6, 46), w - 8, rand(18, 34));
+    captchaCtx.stroke();
+  }
+
+  function regenerateCaptcha(){
+    captchaAnswer = generateCaptchaText(6);
+    drawCaptcha(captchaAnswer);
+    captchaInput.value = "";
+    captchaError.classList.remove("visible");
+    captchaError.textContent = "Please complete CAPTCHA verification.";
+    captchaInput.style.borderColor = "";
   }
 
   function toggleChat(){
@@ -1451,7 +1501,13 @@ startPB(); schedule();
     messages.appendChild(row);
     scrollBottom();
     if (chipList && chipList.length) setTimeout(function(){ renderChips(chipList); }, 200);
-    if (botMessageCount >= CONFIG.showFormAfterMessages && !leadCaptured) setTimeout(function(){ leadForm.classList.add("visible"); ensureCaptchaWidget(); scrollBottom(); }, 600);
+    if (botMessageCount >= CONFIG.showFormAfterMessages && !leadCaptured) {
+      setTimeout(function(){
+        leadForm.classList.add("visible");
+        if (!captchaAnswer) regenerateCaptcha();
+        scrollBottom();
+      }, 600);
+    }
   }
   function addUserMessage(text){
     const row = document.createElement("div");
@@ -1524,6 +1580,11 @@ startPB(); schedule();
     input.style.height = "38px";
     input.style.height = Math.min(input.scrollHeight, 90) + "px";
   });
+  captchaRefresh.addEventListener("click", regenerateCaptcha);
+  captchaInput.addEventListener("input", function(){
+    captchaError.classList.remove("visible");
+    captchaInput.style.borderColor = "";
+  });
   function openCalendlyFromChat(lead){
     const widget = document.querySelector(".calendly-inline-widget");
     const baseUrl = (widget && widget.getAttribute("data-url")) || "https://calendly.com/infoetisora/30min";
@@ -1574,25 +1635,16 @@ startPB(); schedule();
       document.getElementById("ec-email").style.borderColor = email ? "" : "rgba(239,68,68,.6)";
       return;
     }
-    if (!captchaToken) {
+    const typedCaptcha = captchaInput.value.replace(/\s+/g, "").trim().toUpperCase();
+    if (!typedCaptcha || typedCaptcha !== captchaAnswer) {
+      regenerateCaptcha();
+      captchaInput.style.borderColor = "rgba(239,68,68,.6)";
+      captchaError.textContent = "CAPTCHA text did not match. Please try again.";
       captchaError.classList.add("visible");
-      ensureCaptchaWidget();
       return;
     }
     submitBtn.disabled = true;
     submitBtn.textContent = "Submitting...";
-    const captchaOk = await verifyCaptchaToken(captchaToken);
-    if (!captchaOk) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Book My Free Strategy Call";
-      captchaError.textContent = "CAPTCHA verification failed. Please try again.";
-      captchaError.classList.add("visible");
-      if (window.turnstile && captchaWidgetId !== null) {
-        window.turnstile.reset(captchaWidgetId);
-      }
-      captchaToken = "";
-      return;
-    }
     const lead = { fname: fname, lname: lname, email: email, biz: biz, phone: phone, notes: notes, timestamp: new Date().toISOString() };
     console.log("Etisora Lead Captured:", lead);
     openCalendlyFromChat(lead);

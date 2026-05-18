@@ -1532,6 +1532,36 @@ startPB(); schedule();
       chips.appendChild(btn);
     });
   }
+  function getChatEndpoints(){
+    if (window.ETISORA_CHAT_API_URL) return [window.ETISORA_CHAT_API_URL];
+    return ["/api/chat", "/api/chat.php", "api/chat.php"];
+  }
+  async function requestChat(payload){
+    const endpoints = getChatEndpoints();
+    let lastError = null;
+    for (let i = 0; i < endpoints.length; i++) {
+      const endpoint = endpoints[i];
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const raw = await response.text();
+        let data = {};
+        try { data = raw ? JSON.parse(raw) : {}; } catch (_err) { data = {}; }
+        if (!response.ok) {
+          const apiError = (data && data.error && data.error.message) ? data.error.message : ("API request failed (" + response.status + ")");
+          lastError = new Error(apiError);
+          continue;
+        }
+        return data;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    throw (lastError || new Error("All chat endpoints failed"));
+  }
   async function send(text){
     const msg = text.trim();
     if (!msg || isTyping) return;
@@ -1543,13 +1573,12 @@ startPB(); schedule();
     setTyping(true);
     try {
       const payloadMessages = [{ role: "system", content: CONFIG.systemPrompt }].concat(messageHistory);
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: CONFIG.model, messages: payloadMessages, temperature: 0.6, max_tokens: 300 })
+      const data = await requestChat({
+        model: CONFIG.model,
+        messages: payloadMessages,
+        temperature: 0.6,
+        max_tokens: 300
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error((data && data.error && data.error.message) || "API request failed");
       const reply = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
       if (!reply) throw new Error("No content in response");
       messageHistory.push({ role: "assistant", content: reply });

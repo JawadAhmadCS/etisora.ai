@@ -560,7 +560,7 @@
 #ec-calendly-pane.visible{display:block}
 #ec-calendly-inline{width:100%;height:100%}
 #ec-calendly-inline .calendly-inline-widget{min-width:100%!important;height:100%!important}
-#ec-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;scroll-behavior:smooth}
+#ec-messages{flex:1;min-height:72px;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;scroll-behavior:smooth}
 #ec-messages::-webkit-scrollbar{width:4px}
 #ec-messages::-webkit-scrollbar-track{background:transparent}
 #ec-messages::-webkit-scrollbar-thumb{background:rgba(201,168,76,.2);border-radius:4px}
@@ -598,10 +598,20 @@
 #ec-send:hover{background:var(--gold2);transform:scale(1.05)}
 #ec-send:disabled{opacity:.4;cursor:not-allowed;transform:none}
 #ec-send svg{stroke:var(--navy)}
-#ec-lead-form{display:none;flex-direction:column;gap:.6rem;padding:.8rem 1rem;background:rgba(201,168,76,.04);border-top:1px solid rgba(201,168,76,.12);flex-shrink:0}
+#ec-lead-form{display:none;flex-direction:column;gap:.6rem;padding:.8rem 1rem;background:rgba(201,168,76,.04);border-top:1px solid rgba(201,168,76,.12);flex-shrink:1;min-height:0;max-height:46%;overflow-y:auto;overscroll-behavior:contain}
 #ec-lead-form.visible{display:flex}
 #ec-lead-form .ec-form-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--white)}
+#ec-lead-form .ec-form-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
 #ec-lead-form .ec-form-row{display:flex;gap:.5rem}
+#ec-lead-form::-webkit-scrollbar{width:4px}
+#ec-lead-form::-webkit-scrollbar-track{background:transparent}
+#ec-lead-form::-webkit-scrollbar-thumb{background:rgba(201,168,76,.25);border-radius:4px}
+#ec-form-close{
+  width:24px;height:24px;min-width:24px;border-radius:6px;border:1px solid rgba(201,168,76,.28);
+  background:rgba(201,168,76,.12);color:var(--white);cursor:pointer;font-size:.9rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s
+}
+#ec-form-close:hover{background:rgba(201,168,76,.22);border-color:rgba(201,168,76,.45)}
 .ec-field{
   flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.15);border-radius:6px;padding:.5rem .7rem;
   font-family:'Inter',sans-serif;font-size:.78rem;color:var(--white);outline:none;transition:border-color .2s
@@ -630,6 +640,7 @@
 #ec-submit:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:480px){
   #ec-window{width:calc(100vw - 20px);right:10px;bottom:90px;height:70vh;max-height:560px}
+  #ec-lead-form{max-height:52%}
 }
   </style>
 </head>
@@ -1304,7 +1315,10 @@
     <div id="ec-chips"></div>
 
     <div id="ec-lead-form">
-      <div class="ec-form-title">Get your free AI audit</div>
+      <div class="ec-form-head">
+        <div class="ec-form-title">Get your free AI audit</div>
+        <button type="button" id="ec-form-close" aria-label="Close form">×</button>
+      </div>
       <div class="ec-form-row">
         <input class="ec-field" id="ec-fname" placeholder="First name" type="text">
         <input class="ec-field" id="ec-lname" placeholder="Last name" type="text">
@@ -1349,6 +1363,7 @@
   let messageHistory = [];
   let botMessageCount = 0;
   let leadCaptured = false;
+  let leadFormDismissed = false;
   const launcher = document.getElementById("ec-launcher");
   const windowEl = document.getElementById("ec-window");
   const messages = document.getElementById("ec-messages");
@@ -1358,6 +1373,7 @@
   const sendBtn = document.getElementById("ec-send");
   const badge = document.getElementById("ec-badge");
   const leadForm = document.getElementById("ec-lead-form");
+  const leadFormClose = document.getElementById("ec-form-close");
   const submitBtn = document.getElementById("ec-submit");
   const calendlyPane = document.getElementById("ec-calendly-pane");
   const calendlyInline = document.getElementById("ec-calendly-inline");
@@ -1471,13 +1487,20 @@
     messages.appendChild(row);
     scrollBottom();
     if (chipList && chipList.length) setTimeout(function(){ renderChips(chipList); }, 200);
-    if (botMessageCount >= CONFIG.showFormAfterMessages && !leadCaptured) {
+    if (botMessageCount >= CONFIG.showFormAfterMessages && !leadCaptured && !leadFormDismissed) {
       setTimeout(function(){
         leadForm.classList.add("visible");
         if (!captchaAnswer) regenerateCaptcha();
         scrollBottom();
       }, 600);
     }
+  }
+  if (leadFormClose) {
+    leadFormClose.addEventListener("click", function(){
+      leadForm.classList.remove("visible");
+      leadFormDismissed = true;
+      scrollBottom();
+    });
   }
   function addUserMessage(text){
     const row = document.createElement("div");

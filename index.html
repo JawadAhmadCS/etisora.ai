@@ -1375,12 +1375,15 @@
 (function(){
   const CONFIG = {
     greeting: "Hi there! Welcome to Etisora. 👋\n\nWe help businesses across the globe automate their growth with custom AI agents — and our team is available 24/7, no matter where you are.\n\nTo connect you with the right person, are you:\n  [1] 🆕 New to Etisora\n  [2] ✅ An existing client",
-    showFormAfterMessages: 3
+    showFormAfterMessages: 3,
+    legacyModel: "llama-3.3-70b-versatile",
+    legacySystemPrompt: "You are Sora, the friendly AI assistant for Etisora. Keep replies warm, concise, and practical. Help visitors understand AI automation, lead capture, and strategy calls. Ask about their business and pain points. Keep replies under 80 words."
   };
   const CHAT_SESSION_KEY = "etisora_chat_session_id";
   let isOpen = false;
   let isTyping = false;
   let botMessageCount = 0;
+  let messageHistory = [];
   let leadCaptured = false;
   let leadFormDismissed = false;
   let sessionId = localStorage.getItem(CHAT_SESSION_KEY);
@@ -1579,19 +1582,26 @@
     });
   }
   function getChatEndpoints(){
-    if (window.ETISORA_CHAT_API_URL) return [window.ETISORA_CHAT_API_URL];
-    return ["/api/chat"];
+    const endpoints = [];
+    if (window.ETISORA_CHAT_API_URL) endpoints.push(window.ETISORA_CHAT_API_URL);
+    endpoints.push("/api/chat", "/api/chat.php", "api/chat.php");
+    return endpoints.filter(function(url, idx, arr){ return arr.indexOf(url) === idx; });
+  }
+  function isLegacyEndpoint(endpoint){
+    return /chat\.php(?:\?|$)/i.test(endpoint);
   }
   async function requestChat(payload){
     const endpoints = getChatEndpoints();
     let lastError = null;
     for (let i = 0; i < endpoints.length; i++) {
       const endpoint = endpoints[i];
+      const legacy = isLegacyEndpoint(endpoint);
+      const bodyPayload = legacy ? payload.legacy : payload.stateful;
       try {
         const response = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(bodyPayload)
         });
         const raw = await response.text();
         let data = {};
@@ -1601,7 +1611,7 @@
           lastError = new Error(apiError);
           continue;
         }
-        return data;
+        return { data: data, legacy: legacy };
       } catch (err) {
         lastError = err;
       }
@@ -1613,16 +1623,34 @@
     if (!msg || isTyping) return;
     chips.innerHTML = "";
     addUserMessage(msg);
+    messageHistory.push({ role: "user", content: msg });
+    if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
     input.value = "";
     input.style.height = "38px";
     setTyping(true);
     try {
-      const data = await requestChat({
-        sessionId: sessionId,
-        message: msg
+      const responsePayload = await requestChat({
+        stateful: {
+          sessionId: sessionId,
+          message: msg
+        },
+        legacy: {
+          model: CONFIG.legacyModel,
+          messages: [{ role: "system", content: CONFIG.legacySystemPrompt }].concat(messageHistory),
+          temperature: 0.6,
+          max_tokens: 300
+        }
       });
-      const reply = data && data.reply;
+      const data = responsePayload && responsePayload.data;
+      const legacy = Boolean(responsePayload && responsePayload.legacy);
+      const reply = legacy
+        ? (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
+        : (data && data.reply);
       if (!reply) throw new Error("No content in response");
+      if (legacy) {
+        messageHistory.push({ role: "assistant", content: reply });
+        if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
+      }
       setTyping(false);
       addBotMessage(reply);
     } catch (err) {

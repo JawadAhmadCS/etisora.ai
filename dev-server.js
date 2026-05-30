@@ -1,30 +1,12 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env"), quiet: true });
+const { processMessage, createSession, MSG } = require("./chatbot");
+const { ensureHeaders } = require("./sheets");
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
-
-function parseEnv(filePath) {
-  const out = {};
-  if (!fs.existsSync(filePath)) return out;
-  const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const idx = trimmed.indexOf("=");
-    if (idx === -1) continue;
-    const key = trimmed.slice(0, idx).trim();
-    let value = trimmed.slice(idx + 1).trim();
-    value = value.replace(/^['"]|['"]$/g, "");
-    out[key] = value;
-  }
-  return out;
-}
-
-const envFile = parseEnv(path.join(ROOT, ".env"));
-const groqApiKey = process.env.GROQ_API_KEY || envFile.GROQ_API_KEY || "";
-const defaultModel = process.env.GROQ_MODEL || envFile.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -39,18 +21,35 @@ const mimeTypes = {
   ".ico": "image/x-icon",
 };
 
+const sessions = new Map();
+let headersInitPromise = null;
+
 function sendJson(res, status, body) {
   res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(body));
+}
+
+function getSession(sessionId) {
+  if (!sessions.has(sessionId)) {
+    sessions.set(sessionId, createSession());
+  }
+  return sessions.get(sessionId);
+}
+
+function ensureHeadersOnce() {
+  if (!headersInitPromise) {
+    headersInitPromise = ensureHeaders().catch((err) => {
+      console.warn("Google Sheets header init failed:", err.message);
+      headersInitPromise = null;
+    });
+  }
+  return headersInitPromise;
 }
 
 async function handleChat(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return sendJson(res, 405, { error: { message: "Method not allowed" } });
-  }
-  if (!groqApiKey) {
-    return sendJson(res, 500, { error: { message: "Server missing GROQ_API_KEY env var" } });
   }
 
   let raw = "";
@@ -61,27 +60,50 @@ async function handleChat(req, res) {
   req.on("end", async () => {
     try {
       const body = raw ? JSON.parse(raw) : {};
-      const payload = {
-        model: body.model || defaultModel,
-        messages: Array.isArray(body.messages) ? body.messages : [],
-        temperature: typeof body.temperature === "number" ? body.temperature : 0.6,
-        max_tokens: typeof body.max_tokens === "number" ? body.max_tokens : 300,
-      };
+      const sessionId = typeof body.sessionId === "string" && body.sessionId.trim()
+        ? body.sessionId.trim()
+        : null;
+      const message = typeof body.message === "string" ? body.message : "";
 
-      const upstream = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${groqApiKey}`,
-        },
-        body: JSON.stringify(payload),
+      if (!sessionId) {
+        return sendJson(res, 400, { error: { message: "sessionId is required" } });
+      }
+
+      await ensureHeadersOnce();
+      const session = getSession(sessionId);
+      const reply = await processMessage(message, session);
+
+      return sendJson(res, 200, {
+        reply,
+        state: session.state,
+        done: session.state === "DONE",
+        greeting: MSG.greeting,
       });
-
-      const text = await upstream.text();
-      res.writeHead(upstream.status, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(text);
     } catch (err) {
       sendJson(res, 500, { error: { message: err && err.message ? err.message : "Unexpected server error" } });
+    }
+  });
+}
+
+function handleReset(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return sendJson(res, 405, { error: { message: "Method not allowed" } });
+  }
+
+  let raw = "";
+  req.on("data", (chunk) => {
+    raw += chunk;
+    if (raw.length > 250_000) req.destroy();
+  });
+  req.on("end", () => {
+    try {
+      const body = raw ? JSON.parse(raw) : {};
+      const sessionId = typeof body.sessionId === "string" ? body.sessionId.trim() : "";
+      if (sessionId) sessions.delete(sessionId);
+      return sendJson(res, 200, { status: "reset" });
+    } catch (err) {
+      return sendJson(res, 400, { error: { message: "Invalid JSON body" } });
     }
   });
 }
@@ -113,9 +135,13 @@ const server = http.createServer((req, res) => {
   if (reqPath === "/api/chat" || reqPath === "/api/chat.php") {
     return handleChat(req, res);
   }
+  if (reqPath === "/api/reset") {
+    return handleReset(req, res);
+  }
   return serveStatic(req, res);
 });
 
 server.listen(PORT, () => {
   console.log(`Etisora local server running at http://localhost:${PORT}`);
+  ensureHeadersOnce();
 });

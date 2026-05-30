@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Etisora Chatbot Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./chat-test.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="intro card">
+      <p class="eyebrow">LOCAL TEST PANEL</p>
+      <h1>Etisora Chatbot Frontend</h1>
+      <p class="sub">
+        Is panel se aap backend API ko direct test kar sakte hain. Pehle <code>node server.js</code> run karein, phir yahan se chat start karein.
+      </p>
+
+      <div class="config">
+        <label for="apiBase">API Base URL</label>
+        <div class="row">
+          <input id="apiBase" type="text" value="http://localhost:3000" />
+          <button id="pingBtn" class="ghost">Test API</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="newChatBtn">New Chat</button>
+        <button id="resetBtn" class="ghost">Reset Session</button>
+      </div>
+
+      <div class="status-wrap">
+        <span class="status-label">Server Status:</span>
+        <span id="statusPill" class="pill neutral">Not Checked</span>
+      </div>
+    </section>
+
+    <section class="chat card">
+      <div class="chat-head">
+        <h2>Live Conversation</h2>
+        <p id="sessionText">Session: -</p>
+      </div>
+
+      <div id="messages" class="messages" aria-live="polite"></div>
+
+      <div id="quickReplies" class="quick-replies"></div>
+
+      <form id="chatForm" class="composer">
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Type your message... (example: 1)"
+          autocomplete="off"
+          required
+        />
+        <button id="sendBtn" type="submit">Send</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="./chat-test.js"></script>
+</body>
+</html>

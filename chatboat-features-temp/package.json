@@ -1,0 +1,21 @@
+{
+  "name": "chatbot-code",
+  "version": "1.0.0",
+  "description": "``` etisora-chatbot/ ├── .env.example      ← copy to .env and fill in your keys ├── chatbot.js        ← core conversation logic (state machine) ├── openai.js         ← OpenAI integration (fallback + rephrasing) ├── sheets.js         ← Google Sheets integration (saves inquiries) ├── index.js          ← terminal runner (for local testing) ├── server.js         ← Express API server (for your website) └── package.json ```",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "googleapis": "^173.0.0",
+    "openai": "^6.39.1"
+  }
+}

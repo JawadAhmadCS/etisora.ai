@@ -10,6 +10,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$rawBody = file_get_contents('php://input');
+$GLOBALS['ETISORA_RAW_BODY'] = $rawBody;
+$body = json_decode($rawBody ?: '{}', true);
+if (!is_array($body)) {
+    $body = [];
+}
+
+// The website chatbot uses the guided stateful payload. On shared hosting this
+// file may be the only PHP route that survives rewrites, so delegate it before
+// falling back to the generic AI completion proxy.
+if (
+    isset($body['sessionId'], $body['message']) &&
+    is_string($body['sessionId']) &&
+    is_string($body['message'])
+) {
+    require __DIR__ . DIRECTORY_SEPARATOR . 'chat-stateful.php';
+    exit;
+}
+
 function read_env_file(string $path): array {
     if (!is_file($path) || !is_readable($path)) {
         return [];
@@ -46,12 +65,6 @@ if ($apiKey === '') {
     http_response_code(500);
     echo json_encode(['error' => ['message' => 'Server missing GROQ_API_KEY env var']]);
     exit;
-}
-
-$rawBody = file_get_contents('php://input');
-$body = json_decode($rawBody ?: '{}', true);
-if (!is_array($body)) {
-    $body = [];
 }
 
 $model = (isset($body['model']) && is_string($body['model']) && $body['model'] !== '')

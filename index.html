@@ -1391,6 +1391,7 @@
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 
 <!-- -- SCRIPTS -- -->
+<script src="chatbot.js?v=202606042215"></script>
 <script>
 (function(){
   const CONFIG = {
@@ -1406,10 +1407,258 @@
   let messageHistory = [];
   let leadCaptured = false;
   let leadFormDismissed = false;
+  let sharedChatSession = null;
+  const CLIENT_STATES = {
+    GREETING: "GREETING",
+    A_INDUSTRY: "A_INDUSTRY",
+    A_PAIN: "A_PAIN",
+    A_TIMELINE: "A_TIMELINE",
+    CAPTURE_NAME: "CAPTURE_NAME",
+    CAPTURE_EMAIL: "CAPTURE_EMAIL",
+    CAPTURE_PHONE: "CAPTURE_PHONE",
+    CAPTURE_DESC: "CAPTURE_DESC",
+    CAPTURE_TIME: "CAPTURE_TIME",
+    CAPTURE_METHOD: "CAPTURE_METHOD",
+    B_PURPOSE: "B_PURPOSE",
+    B_TECH: "B_TECH",
+    CONFIRM: "CONFIRM",
+    DONE: "DONE"
+  };
+  const CLIENT_MSG = {
+    aIndustry: "Great, welcome! We work across a wide range of industries. Which best describes your business?\n  [1] Professional services\n  [2] Trades & home services\n  [3] Retail & ecommerce\n  [4] Hospitality\n  [5] Healthcare\n  [6] Other",
+    aPain: "Got it. What's the biggest challenge you're trying to solve right now?\n  [1] Missing leads / after-hours calls\n  [2] Slow lead follow-up\n  [3] Repetitive manual tasks\n  [4] Not sure yet — just exploring",
+    aTimeline: "Helpful, thank you. Are you looking to move quickly or still in research mode?\n  [1] Ready — I want to move in the next 30 days\n  [2] Researching my options\n  [3] Just browsing for now",
+    bPurpose: "Good to have you back! How can we help you today?\n  [1] I need technical support\n  [2] I want to explore additional services\n  [3] Billing or account question\n  [4] Something else",
+    bTech: "No problem. Please briefly describe the issue you're experiencing and one of our technical team members will follow up with you directly.\n\n(Type your issue below)",
+    global: "Just so you know — Etisora operates globally and our team works around the clock. ⏰\n\nWherever you are, your inquiry won't sit in a queue. We triage every submission and the right person will follow up within 24 hours or less.\n\nLet me grab a few quick details to get you to the right team.",
+    name: "What's your name?",
+    email: "What's the best email address to reach you? (type 'skip' if you prefer phone/WhatsApp only)",
+    phone: "And a phone number? (press Enter to skip)",
+    phoneRequired: "No problem, we can skip email. Please share a valid phone/WhatsApp number so our team can reach you:",
+    desc: "In one sentence — what do you need help with?",
+    time: "Is there a best time of day to reach you? (press Enter to skip)",
+    method: "How would you prefer we contact you?\n  [1] 📧 Email\n  [2] 📞 Phone call\n  [3] 💬 WhatsApp",
+    fallback: "I want to make sure you get the right help! Would you like to leave a quick inquiry so our team can follow up within 24 hours?\n  [1] Yes, leave an inquiry\n  [2] No thanks",
+    declined: "No problem at all.\n\nIf you'd like, we can continue here:\n  [1] New to Etisora\n  [2] Existing client",
+    done: "Thanks for reaching out to Etisora! Have a great day. 🌟\nVisit us anytime at etisora.ai"
+  };
+  let clientFlow = createClientFlow();
   function createSessionId(){
     return (window.crypto && window.crypto.randomUUID)
       ? window.crypto.randomUUID()
       : ("session-" + Date.now() + "-" + Math.floor(Math.random() * 1e6));
+  }
+  function createClientFlow(){
+    return {
+      state: CLIENT_STATES.GREETING,
+      awaitingFallbackOffer: false,
+      emailSkipped: false,
+      name: "",
+      supportType: ""
+    };
+  }
+  function clientChoice(text, map){
+    const key = (text || "").trim().toLowerCase();
+    if (!key) return null;
+    const numeric = key.match(/^\[?\s*([1-9])\s*\]?(?:[\).\-\s]|$)/);
+    if (numeric && map[numeric[1]]) return map[numeric[1]];
+    return map[key] || null;
+  }
+  function clientValidEmail(text){
+    return /^[a-z0-9][a-z0-9._%+\-]{0,63}@[a-z0-9.-]+\.[a-z]{2,}$/i.test((text || "").trim());
+  }
+  function clientLikelyPhone(text){
+    const raw = (text || "").trim();
+    if (!raw || !/^[+()\-\s0-9]+$/.test(raw)) return false;
+    const digits = raw.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15;
+  }
+  function clientLikelyName(text){
+    const raw = (text || "").trim();
+    if (raw.length < 2 || raw.length > 50 || /[@\d]/.test(raw)) return false;
+    return /^[a-zA-Z][a-zA-Z\s'.-]*$/.test(raw) && raw.split(/\s+/).filter(Boolean).length <= 4;
+  }
+  function clientMeaningfulDescription(text){
+    const raw = (text || "").trim();
+    return raw.length >= 5 && raw.split(/\s+/).filter(Boolean).length >= 3;
+  }
+  function clientFallbackReply(msg){
+    const lc = (msg || "").toLowerCase();
+    if (lc.includes("pricing")) {
+      return "Our pricing starts from $997/month for the Starter plan and $2,497/month for the Growth plan. Full details are at etisora.ai/#pricing\n\nTo connect you with the right person, are you:\n  [1] New to Etisora\n  [2] Existing client";
+    }
+    if (lc.includes("service") || lc.includes("chatbot") || lc.includes("automation")) {
+      return "We help with AI chatbots, voice agents, lead generation, paid ad campaigns, WhatsApp automation, and customer journey mapping.\n\nTo connect you with the right person, are you:\n  [1] New to Etisora\n  [2] Existing client";
+    }
+    if (lc.includes("cake")) {
+      return "Awesome, cake is always a good topic. For Etisora help, I can route you to the right team from here.\n\nTo connect you with the right person, are you:\n  [1] New to Etisora\n  [2] Existing client";
+    }
+    return "Awesome, thanks for sharing. For Etisora help, I can route you to the right team from here.\n\nTo connect you with the right person, are you:\n  [1] New to Etisora\n  [2] Existing client";
+  }
+  function isOptionInput(text){
+    return /^\[?\s*[1-9]\s*\]?(?:[\).\-\s]|$)/.test((text || "").trim());
+  }
+  function shouldAnswerWithClientFlow(text){
+    const state = clientFlow.state;
+    if (clientFlow.awaitingFallbackOffer) return true;
+    if (isOptionInput(text)) return true;
+    return [
+      CLIENT_STATES.A_INDUSTRY,
+      CLIENT_STATES.A_PAIN,
+      CLIENT_STATES.A_TIMELINE,
+      CLIENT_STATES.B_PURPOSE,
+      CLIENT_STATES.B_TECH,
+      CLIENT_STATES.CAPTURE_NAME,
+      CLIENT_STATES.CAPTURE_EMAIL,
+      CLIENT_STATES.CAPTURE_PHONE,
+      CLIENT_STATES.CAPTURE_DESC,
+      CLIENT_STATES.CAPTURE_TIME,
+      CLIENT_STATES.CAPTURE_METHOD,
+      CLIENT_STATES.CONFIRM,
+      CLIENT_STATES.DONE
+    ].indexOf(state) !== -1;
+  }
+  function processClientFallback(msg){
+    const text = (msg || "").trim();
+    const customerType = { "1": "new", "new": "new", "new to etisora": "new", "2": "existing", "existing": "existing", "existing client": "existing" };
+    const industry = { "1": "professional", "2": "trades", "3": "retail", "4": "hospitality", "5": "healthcare", "6": "other" };
+    const pain = { "1": "leads", "2": "followup", "3": "manual", "4": "exploring" };
+    const timeline = { "1": "ready", "2": "researching", "3": "browsing" };
+    const purpose = { "1": "tech", "2": "services", "3": "billing", "4": "other" };
+    const method = { "1": "Email", "email": "Email", "2": "Phone", "phone": "Phone", "call": "Phone", "3": "WhatsApp", "whatsapp": "WhatsApp", "wa": "WhatsApp" };
+    const yesNo = { "1": "yes", "yes": "yes", "y": "yes", "2": "no", "no": "no", "n": "no" };
+
+    if (clientFlow.awaitingFallbackOffer) {
+      const val = clientChoice(text, yesNo);
+      clientFlow.awaitingFallbackOffer = false;
+      if (val === "yes") {
+        clientFlow.state = CLIENT_STATES.CAPTURE_NAME;
+        return CLIENT_MSG.global + "\n\n" + CLIENT_MSG.name;
+      }
+      if (val === "no") {
+        clientFlow.state = CLIENT_STATES.GREETING;
+        return CLIENT_MSG.declined;
+      }
+      clientFlow.awaitingFallbackOffer = true;
+      return clientFallbackReply(text);
+    }
+
+    switch (clientFlow.state) {
+      case CLIENT_STATES.GREETING: {
+        const val = clientChoice(text, customerType);
+        if (!val) {
+          return clientFallbackReply(text);
+        }
+        if (val === "new") {
+          clientFlow.state = CLIENT_STATES.A_INDUSTRY;
+          return CLIENT_MSG.aIndustry;
+        }
+        clientFlow.state = CLIENT_STATES.B_PURPOSE;
+        return CLIENT_MSG.bPurpose;
+      }
+      case CLIENT_STATES.A_INDUSTRY:
+        if (!clientChoice(text, industry)) return CLIENT_MSG.aIndustry;
+        clientFlow.state = CLIENT_STATES.A_PAIN;
+        return CLIENT_MSG.aPain;
+      case CLIENT_STATES.A_PAIN:
+        if (!clientChoice(text, pain)) return CLIENT_MSG.aPain;
+        clientFlow.state = CLIENT_STATES.A_TIMELINE;
+        return CLIENT_MSG.aTimeline;
+      case CLIENT_STATES.A_TIMELINE:
+        if (!clientChoice(text, timeline)) return CLIENT_MSG.aTimeline;
+        clientFlow.state = CLIENT_STATES.CAPTURE_NAME;
+        return CLIENT_MSG.global + "\n\n" + CLIENT_MSG.name;
+      case CLIENT_STATES.B_PURPOSE: {
+        const val = clientChoice(text, purpose);
+        if (!val) return CLIENT_MSG.bPurpose;
+        clientFlow.supportType = val;
+        if (val === "tech") {
+          clientFlow.state = CLIENT_STATES.B_TECH;
+          return CLIENT_MSG.bTech;
+        }
+        clientFlow.state = CLIENT_STATES.CAPTURE_NAME;
+        return CLIENT_MSG.global + "\n\n" + CLIENT_MSG.name;
+      }
+      case CLIENT_STATES.B_TECH:
+        clientFlow.state = CLIENT_STATES.CAPTURE_NAME;
+        return CLIENT_MSG.global + "\n\n" + CLIENT_MSG.name;
+      case CLIENT_STATES.CAPTURE_NAME:
+        if (!clientLikelyName(text)) return "Please type just your name (example: Jawad Khan).";
+        clientFlow.name = text;
+        clientFlow.state = CLIENT_STATES.CAPTURE_EMAIL;
+        return CLIENT_MSG.email;
+      case CLIENT_STATES.CAPTURE_EMAIL:
+        if (text.toLowerCase() === "skip") {
+          clientFlow.emailSkipped = true;
+          clientFlow.state = CLIENT_STATES.CAPTURE_PHONE;
+          return CLIENT_MSG.phoneRequired;
+        }
+        if (!clientValidEmail(text)) return "Please enter a valid email (example: name@example.com), or type 'skip'.";
+        clientFlow.emailSkipped = false;
+        clientFlow.state = CLIENT_STATES.CAPTURE_PHONE;
+        return CLIENT_MSG.phone;
+      case CLIENT_STATES.CAPTURE_PHONE:
+        if (clientFlow.emailSkipped && !clientLikelyPhone(text)) return CLIENT_MSG.phoneRequired;
+        if (!clientFlow.emailSkipped && text && !clientLikelyPhone(text)) return "Please enter a valid phone number, or leave blank to skip.";
+        clientFlow.state = CLIENT_STATES.CAPTURE_DESC;
+        return CLIENT_MSG.desc;
+      case CLIENT_STATES.CAPTURE_DESC:
+        if (!clientMeaningfulDescription(text)) return "Please share a short one-sentence summary so we can route you correctly.";
+        clientFlow.state = CLIENT_STATES.CAPTURE_TIME;
+        return CLIENT_MSG.time;
+      case CLIENT_STATES.CAPTURE_TIME:
+        clientFlow.state = CLIENT_STATES.CAPTURE_METHOD;
+        return CLIENT_MSG.method;
+      case CLIENT_STATES.CAPTURE_METHOD: {
+        const val = clientChoice(text, method);
+        if (!val) return CLIENT_MSG.method;
+        clientFlow.state = CLIENT_STATES.CONFIRM;
+        return "Perfect — you're all set, " + (clientFlow.name || "there") + "! ✅\n\nYour inquiry has been captured. Our team will contact you within 24 hours or less.\n\nIs there anything else I can help you with? (Type 'pricing', 'services', or 'done')";
+      }
+      case CLIENT_STATES.CONFIRM:
+        if (text.toLowerCase().includes("pricing")) return "Our pricing starts from $997/month for the Starter plan and $2,497/month for the Growth plan. Full details at etisora.ai/#pricing\n\nAnything else I can help with? (type 'done' to finish)";
+        if (text.toLowerCase().includes("service")) return "We offer AI chatbots, voice agents, lead generation, paid ad campaigns, WhatsApp automation, and full customer journey mapping.\n\nAnything else? (type 'done' to finish)";
+        clientFlow.state = CLIENT_STATES.DONE;
+        return CLIENT_MSG.done;
+      case CLIENT_STATES.DONE:
+        clientFlow = createClientFlow();
+        return CONFIG.greeting;
+      default:
+        clientFlow = createClientFlow();
+        return CONFIG.greeting;
+    }
+  }
+  function syncClientFlowState(serverState){
+    const map = {
+      GREETING: CLIENT_STATES.GREETING,
+      A_INDUSTRY: CLIENT_STATES.A_INDUSTRY,
+      A_PAIN: CLIENT_STATES.A_PAIN,
+      A_PAIN_POINT: CLIENT_STATES.A_PAIN,
+      A_TIMELINE: CLIENT_STATES.A_TIMELINE,
+      B_PURPOSE: CLIENT_STATES.B_PURPOSE,
+      B_TECH: CLIENT_STATES.B_TECH,
+      B_TECH_SUPPORT: CLIENT_STATES.B_TECH,
+      CAPTURE_NAME: CLIENT_STATES.CAPTURE_NAME,
+      CAPTURE_EMAIL: CLIENT_STATES.CAPTURE_EMAIL,
+      CAPTURE_PHONE: CLIENT_STATES.CAPTURE_PHONE,
+      CAPTURE_DESC: CLIENT_STATES.CAPTURE_DESC,
+      CAPTURE_TIME: CLIENT_STATES.CAPTURE_TIME,
+      CAPTURE_METHOD: CLIENT_STATES.CAPTURE_METHOD,
+      CONFIRM: CLIENT_STATES.CONFIRM,
+      DONE: CLIENT_STATES.DONE
+    };
+    if (map[serverState]) clientFlow.state = map[serverState];
+  }
+  function getSharedChatSession(){
+    if (!window.EtisoraChatbot || !window.EtisoraChatbot.createSession) return null;
+    if (!sharedChatSession) sharedChatSession = window.EtisoraChatbot.createSession();
+    return sharedChatSession;
+  }
+  async function requestSharedChatbot(msg){
+    const session = getSharedChatSession();
+    if (!session || !window.EtisoraChatbot.processMessage) return null;
+    const reply = await window.EtisoraChatbot.processMessage(msg, session);
+    return reply ? { reply: reply, state: session.state } : null;
   }
   let sessionId = localStorage.getItem(CHAT_SESSION_KEY);
   if (!sessionId) {
@@ -1608,7 +1857,8 @@
   function getChatEndpoints(){
     const endpoints = [];
     if (window.ETISORA_CHAT_API_URL) endpoints.push(window.ETISORA_CHAT_API_URL);
-    // Prefer stateful PHP flow on shared hosting (e.g., Namecheap) for consistent behavior.
+    // Prefer the guided stateful flow on shared hosting (e.g., Namecheap) for consistent behavior.
+    // chat.php also accepts the stateful payload as a compatibility fallback.
     endpoints.push(
       "/api/chat-stateful.php",
       "api/chat-stateful.php",
@@ -1619,7 +1869,7 @@
     return endpoints.filter(function(url, idx, arr){ return arr.indexOf(url) === idx; });
   }
   function isLegacyEndpoint(endpoint){
-    return /chat\.php(?:\?|$)/i.test(endpoint);
+    return /legacy-chat\.php(?:\?|$)/i.test(endpoint);
   }
   async function requestChat(payload){
     const endpoints = getChatEndpoints();
@@ -1670,6 +1920,21 @@
     if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
     input.value = "";
     input.style.height = "38px";
+    const sharedReply = await requestSharedChatbot(msg);
+    if (sharedReply && sharedReply.reply) {
+      const reply = sharedReply.reply;
+      messageHistory.push({ role: "assistant", content: reply });
+      if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
+      setTimeout(function(){ addBotMessage(reply); }, 250);
+      return;
+    }
+    if (shouldAnswerWithClientFlow(msg)) {
+      const reply = processClientFallback(msg);
+      messageHistory.push({ role: "assistant", content: reply });
+      if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
+      setTimeout(function(){ addBotMessage(reply); }, 250);
+      return;
+    }
     setTyping(true);
     try {
       const responsePayload = await requestChat({
@@ -1690,6 +1955,11 @@
         ? (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
         : (data && data.reply);
       if (!reply) throw new Error("No content in response");
+      if (!legacy && data && data.state) {
+        syncClientFlowState(data.state);
+      } else if (!legacy) {
+        processClientFallback(msg);
+      }
       if (legacy) {
         messageHistory.push({ role: "assistant", content: reply });
         if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
@@ -1698,8 +1968,11 @@
       addBotMessage(reply);
     } catch (err) {
       console.error("Etisora chatbot error:", err);
+      const reply = processClientFallback(msg);
+      messageHistory.push({ role: "assistant", content: reply });
+      if (messageHistory.length > 20) messageHistory = messageHistory.slice(-20);
       setTyping(false);
-      addBotMessage("Sorry, I hit a snag. Please email info@etisora.ai and we will get right back to you.");
+      addBotMessage(reply);
     }
   }
   function resetChatUiForNewSession(){
@@ -1707,6 +1980,10 @@
     chips.innerHTML = "";
     typing.classList.remove("visible");
     messageHistory = [];
+    clientFlow = createClientFlow();
+    sharedChatSession = window.EtisoraChatbot && window.EtisoraChatbot.createSession
+      ? window.EtisoraChatbot.createSession()
+      : null;
     botMessageCount = 0;
     leadCaptured = false;
     leadFormDismissed = false;

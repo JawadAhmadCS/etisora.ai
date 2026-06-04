@@ -24,6 +24,32 @@ function norm(string $value): string {
     return strtolower(trim($value));
 }
 
+function read_env_file_stateful(string $path): array {
+    if (!is_file($path) || !is_readable($path)) {
+        return [];
+    }
+
+    $vars = [];
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) {
+        return [];
+    }
+
+    foreach ($lines as $line) {
+        $trim = trim($line);
+        if ($trim === '' || strpos($trim, '#') === 0) {
+            continue;
+        }
+        $parts = explode('=', $trim, 2);
+        if (count($parts) !== 2) {
+            continue;
+        }
+        $vars[trim($parts[0])] = trim(trim($parts[1]), "\"'");
+    }
+
+    return $vars;
+}
+
 function match_choice(string $input, array $map): ?string {
     $key = norm($input);
     if ($key === '') {
@@ -38,6 +64,110 @@ function match_choice(string $input, array $map): ?string {
     }
 
     return $map[$key] ?? null;
+}
+
+function append_history(array &$session, string $role, string $text): void {
+    if (!isset($session['history']) || !is_array($session['history'])) {
+        $session['history'] = [];
+    }
+
+    $session['history'][] = [
+        'role' => $role,
+        'text' => substr($text, 0, 500),
+        'at' => gmdate('c'),
+    ];
+
+    if (count($session['history']) > 30) {
+        $session['history'] = array_slice($session['history'], -30);
+    }
+}
+
+function ai_fallback_reply(string $message, array $session): ?string {
+    $envVars = read_env_file_stateful(dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env');
+    $apiKey = getenv('GROQ_API_KEY');
+    if ($apiKey === false || trim($apiKey) === '') {
+        $apiKey = $envVars['GROQ_API_KEY'] ?? '';
+    }
+    if (trim($apiKey) === '' || stripos($apiKey, 'your_groq_api_key_here') !== false) {
+        return null;
+    }
+
+    $model = (($envVars['GROQ_MODEL'] ?? '') !== '') ? $envVars['GROQ_MODEL'] : 'llama-3.3-70b-versatile';
+    $context = [
+        'state' => $session['state'] ?? 'UNKNOWN',
+        'customerType' => $session['customerType'] ?? null,
+        'industry' => $session['industry'] ?? null,
+        'painPoint' => $session['painPoint'] ?? null,
+        'timeline' => $session['timeline'] ?? null,
+        'supportType' => $session['supportType'] ?? null,
+        'history' => array_slice(is_array($session['history'] ?? null) ? $session['history'] : [], -8),
+    ];
+
+    $payload = json_encode([
+        'model' => $model,
+        'messages' => [
+            [
+                'role' => 'system',
+                'content' => "You are Sora, the friendly AI assistant for Etisora. Keep replies warm, concise, and practical. Answer the user's question, but always guide them back to the numbered Etisora chatbot flow. Do not invent prices or product details. End with a soft next step.",
+            ],
+            [
+                'role' => 'system',
+                'content' => 'Conversation context JSON: ' . json_encode($context),
+            ],
+            [
+                'role' => 'user',
+                'content' => $message,
+            ],
+        ],
+        'temperature' => 0.6,
+        'max_tokens' => 170,
+    ]);
+
+    if ($payload === false) {
+        return null;
+    }
+
+    $responseBody = false;
+    $httpCode = 0;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $apiKey,
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        $responseBody = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+    } else {
+        $contextStream = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/json\r\nAuthorization: Bearer " . $apiKey . "\r\n",
+                'content' => $payload,
+                'timeout' => 30,
+                'ignore_errors' => true,
+            ],
+        ]);
+        $responseBody = @file_get_contents('https://api.groq.com/openai/v1/chat/completions', false, $contextStream);
+        $httpCode = 200;
+    }
+
+    if ($responseBody === false || $httpCode >= 400) {
+        return null;
+    }
+
+    $decoded = json_decode((string)$responseBody, true);
+    if (!is_array($decoded)) {
+        return null;
+    }
+
+    $text = $decoded['choices'][0]['message']['content'] ?? null;
+    return is_string($text) && trim($text) !== '' ? trim($text) : null;
 }
 
 function is_valid_email(string $value): bool {
@@ -104,6 +234,8 @@ function create_session_data(): array {
         'preferredTime' => null,
         'contactMethod' => null,
         'emailSkipped' => false,
+        'awaitingFallbackOffer' => false,
+        'history' => [],
     ];
 }
 
@@ -112,28 +244,30 @@ function reset_session_data(array &$s): void {
 }
 
 $MSG = [
-    'greeting' => "Hi there! Welcome to Etisora.\n\nTo connect you with the right person, are you:\n  [1] New to Etisora\n  [2] An existing client",
-    'a_industry' => "Great, welcome! Which best describes your business?\n  [1] Professional services\n  [2] Trades and home services\n  [3] Retail and ecommerce\n  [4] Hospitality\n  [5] Healthcare\n  [6] Other",
-    'a_pain' => "What's the biggest challenge right now?\n  [1] Missing leads / after-hours calls\n  [2] Slow lead follow-up\n  [3] Repetitive manual tasks\n  [4] Not sure yet, just exploring",
-    'a_timeline' => "Are you ready to move?\n  [1] Ready in next 30 days\n  [2] Researching options\n  [3] Just browsing",
-    'b_purpose' => "How can we help today?\n  [1] Technical support\n  [2] Explore additional services\n  [3] Billing or account question\n  [4] Something else",
-    'b_tech' => "Please briefly describe the issue and our technical team will follow up.",
-    'b_services' => "Great choice. We can help with AI voice agents, ads, WhatsApp automation, and full journey mapping.",
-    'global' => "Etisora supports clients globally and our team is available 24/7.\n\nLet me capture quick details:",
+    'greeting' => "Hi there! Welcome to Etisora. 👋\n\nWe help businesses across the globe automate their growth with custom AI agents — and our team is available 24/7, no matter where you are.\n\nTo connect you with the right person, are you:\n  [1] 🆕 New to Etisora\n  [2] ✅ An existing client",
+    'a_industry' => "Great, welcome! We work across a wide range of industries. Which best describes your business?\n  [1] Professional services\n  [2] Trades & home services\n  [3] Retail & ecommerce\n  [4] Hospitality\n  [5] Healthcare\n  [6] Other",
+    'a_pain' => "Got it. What's the biggest challenge you're trying to solve right now?\n  [1] Missing leads / after-hours calls\n  [2] Slow lead follow-up\n  [3] Repetitive manual tasks\n  [4] Not sure yet — just exploring",
+    'a_timeline' => "Helpful, thank you. Are you looking to move quickly or still in research mode?\n  [1] Ready — I want to move in the next 30 days\n  [2] Researching my options\n  [3] Just browsing for now",
+    'b_purpose' => "Good to have you back! How can we help you today?\n  [1] I need technical support\n  [2] I want to explore additional services\n  [3] Billing or account question\n  [4] Something else",
+    'b_tech' => "No problem. Please briefly describe the issue you're experiencing and one of our technical team members will follow up with you directly.\n\n(Type your issue below)",
+    'b_services' => "Exciting — we've got a lot we can add on top of what you're already running. Things like AI voice agents, paid ad campaigns, WhatsApp automation, and full customer journey mapping.\n\nI'll have someone reach out to walk you through what makes sense for your setup. Let me grab your details.",
+    'global' => "Just so you know — Etisora operates globally and our team works around the clock. ⏰\n\nWherever you are, your inquiry won't sit in a queue. We triage every submission and the right person will follow up within 24 hours or less.\n\nLet me grab a few quick details to get you to the right team.",
     'capture_name' => "What's your name?",
     'capture_email' => "Best email to reach you? (type 'skip' if you prefer phone/WhatsApp only)",
     'capture_phone' => "Phone number? (press Enter to skip)",
     'capture_desc' => "In one sentence, what do you need help with?",
     'capture_time' => "Best time to reach you? (press Enter to skip)",
-    'capture_method' => "Preferred contact method?\n  [1] Email\n  [2] Phone call\n  [3] WhatsApp",
+    'capture_method' => "How would you prefer we contact you?\n  [1] 📧 Email\n  [2] 📞 Phone call\n  [3] 💬 WhatsApp",
     'invalid_name' => "Please enter a valid name (example: Jawad Khan).",
     'invalid_email' => "Please enter a valid email (example: name@example.com), or type 'skip'.",
     'phone_required' => "Since email is skipped, please enter a valid phone/WhatsApp number.",
     'invalid_phone' => "Please enter a valid phone number, or leave blank to skip.",
     'invalid_desc' => "Please share a short one-sentence summary so we can route you correctly.",
     'invalid_method' => "Please choose contact method:\n  [1] Email\n  [2] Phone call\n  [3] WhatsApp",
-    'confirm' => "Perfect, %s. Your inquiry has been sent to our %s team. We'll contact you within 24 hours.\n\nAnything else? (type 'pricing', 'services', or 'done')",
-    'done' => "Thanks for reaching out to Etisora. Have a great day!",
+    'confirm' => "Perfect — you're all set, %s! ✅\n\nYour inquiry has been sent to our %s team and you can expect to hear from us within 24 hours or less.\n\nIs there anything else I can help you with? (Type 'pricing', 'services', or 'done')",
+    'done' => "Thanks for reaching out to Etisora! Have a great day. 🌟\nVisit us anytime at etisora.ai",
+    'fallback_offer' => "I want to make sure you get the right help! Would you like to leave a quick inquiry so our team can follow up within 24 hours?\n  [1] Yes, leave an inquiry\n  [2] No thanks",
+    'fallback_declined' => "No problem at all.\n\nIf you'd like, we can continue here:\n  [1] New to Etisora\n  [2] Existing client",
     'fallback' => "Please choose one option so I can route you correctly.",
 ];
 
@@ -143,19 +277,23 @@ $MAP = [
         '2' => 'existing', 'existing' => 'existing', 'existing client' => 'existing',
     ],
     'industry' => [
-        '1' => 'Professional services', '2' => 'Trades and home services', '3' => 'Retail and ecommerce',
+        '1' => 'Professional services', '2' => 'Trades & home services', '3' => 'Retail & ecommerce',
         '4' => 'Hospitality', '5' => 'Healthcare', '6' => 'Other',
-        'professional' => 'Professional services', 'trades' => 'Trades and home services',
-        'retail' => 'Retail and ecommerce', 'hospitality' => 'Hospitality',
+        'professional' => 'Professional services', 'trades' => 'Trades & home services',
+        'retail' => 'Retail & ecommerce', 'hospitality' => 'Hospitality',
         'healthcare' => 'Healthcare', 'other' => 'Other',
     ],
     'pain' => [
         '1' => 'Missing leads / after-hours calls', '2' => 'Slow lead follow-up',
-        '3' => 'Repetitive manual tasks', '4' => 'Not sure yet, just exploring',
+        '3' => 'Repetitive manual tasks', '4' => 'Not sure yet — just exploring',
+        'missing' => 'Missing leads / after-hours calls', 'leads' => 'Missing leads / after-hours calls',
+        'slow' => 'Slow lead follow-up', 'manual' => 'Repetitive manual tasks',
+        'exploring' => 'Not sure yet — just exploring',
     ],
     'timeline' => [
-        '1' => 'Ready in next 30 days', '2' => 'Researching options', '3' => 'Just browsing',
-        'ready' => 'Ready in next 30 days', 'researching' => 'Researching options', 'browsing' => 'Just browsing',
+        '1' => 'Ready — next 30 days', '2' => 'Researching options', '3' => 'Just browsing',
+        'ready' => 'Ready — next 30 days', '30' => 'Ready — next 30 days',
+        'researching' => 'Researching options', 'browsing' => 'Just browsing',
     ],
     'purpose' => [
         '1' => 'tech_support', '2' => 'new_services', '3' => 'billing', '4' => 'other',
@@ -167,9 +305,25 @@ $MAP = [
         'email' => 'Email', 'phone' => 'Phone', 'call' => 'Phone',
         'whatsapp' => 'WhatsApp', 'wa' => 'WhatsApp',
     ],
+    'fallbackOffer' => [
+        '1' => 'yes', 'yes' => 'yes', 'y' => 'yes',
+        '2' => 'no', 'no' => 'no', 'n' => 'no',
+    ],
 ];
 
-$rawBody = file_get_contents('php://input');
+function fallback_response(string $message, array &$session, array $MSG): string {
+    $session['awaitingFallbackOffer'] = true;
+    $aiReply = ai_fallback_reply($message, $session);
+    if ($aiReply === null) {
+        return $MSG['fallback_offer'];
+    }
+
+    return $aiReply . "\n\n---\nWould you like to leave a quick inquiry so our team can follow up?\n  [1] Yes please\n  [2] No thanks";
+}
+
+$rawBody = isset($GLOBALS['ETISORA_RAW_BODY']) && is_string($GLOBALS['ETISORA_RAW_BODY'])
+    ? $GLOBALS['ETISORA_RAW_BODY']
+    : file_get_contents('php://input');
 $body = json_decode($rawBody ?: '{}', true);
 if (!is_array($body)) {
     $body = [];
@@ -192,16 +346,41 @@ if (!isset($_SESSION['etisora_chat_sessions'][$sessionId]) || !is_array($_SESSIO
 $session = $_SESSION['etisora_chat_sessions'][$sessionId];
 $inputLc = norm($message);
 $reply = $MSG['fallback'];
+append_history($session, 'user', $message);
 
 function contains_text(string $haystack, string $needle): bool {
     return $needle !== '' && strpos($haystack, $needle) !== false;
+}
+
+if (($session['awaitingFallbackOffer'] ?? false) === true) {
+    $session['awaitingFallbackOffer'] = false;
+    $fallbackChoice = match_choice($message, $MAP['fallbackOffer']);
+
+    if ($fallbackChoice === 'yes') {
+        $session['state'] = 'CAPTURE_NAME';
+        $reply = $MSG['global'] . "\n\n" . $MSG['capture_name'];
+    } elseif ($fallbackChoice === 'no') {
+        $session['state'] = 'GREETING';
+        $reply = $MSG['fallback_declined'];
+    } else {
+        $reply = fallback_response($message, $session, $MSG);
+    }
+
+    append_history($session, 'assistant', $reply);
+    $_SESSION['etisora_chat_sessions'][$sessionId] = $session;
+    json_response(200, [
+        'reply' => $reply,
+        'state' => $session['state'],
+        'done' => $session['state'] === 'DONE',
+        'greeting' => $MSG['greeting'],
+    ]);
 }
 
 switch ($session['state']) {
     case 'GREETING':
         $type = match_choice($message, $MAP['customerType']);
         if ($type === null) {
-            $reply = $MSG['fallback'] . "\n\n" . $MSG['greeting'];
+            $reply = fallback_response($message, $session, $MSG);
             break;
         }
         $session['customerType'] = $type;
@@ -217,7 +396,7 @@ switch ($session['state']) {
     case 'A_INDUSTRY':
         $val = match_choice($message, $MAP['industry']);
         if ($val === null) {
-            $reply = $MSG['a_industry'];
+            $reply = fallback_response($message, $session, $MSG);
             break;
         }
         $session['industry'] = $val;
@@ -228,7 +407,7 @@ switch ($session['state']) {
     case 'A_PAIN':
         $val = match_choice($message, $MAP['pain']);
         if ($val === null) {
-            $reply = $MSG['a_pain'];
+            $reply = fallback_response($message, $session, $MSG);
             break;
         }
         $session['painPoint'] = $val;
@@ -239,7 +418,7 @@ switch ($session['state']) {
     case 'A_TIMELINE':
         $val = match_choice($message, $MAP['timeline']);
         if ($val === null) {
-            $reply = $MSG['a_timeline'];
+            $reply = fallback_response($message, $session, $MSG);
             break;
         }
         $session['timeline'] = $val;
@@ -250,7 +429,7 @@ switch ($session['state']) {
     case 'B_PURPOSE':
         $val = match_choice($message, $MAP['purpose']);
         if ($val === null) {
-            $reply = $MSG['b_purpose'];
+            $reply = fallback_response($message, $session, $MSG);
             break;
         }
         $session['supportType'] = $val;
@@ -394,6 +573,7 @@ switch ($session['state']) {
         break;
 }
 
+append_history($session, 'assistant', $reply);
 $_SESSION['etisora_chat_sessions'][$sessionId] = $session;
 
 json_response(200, [

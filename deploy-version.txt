@@ -1,0 +1,2 @@
+Etisora deploy build: 2026-06-04-2215
+Expected chatbot behavior: live browser loads shared chatbot.js first, matching localhost guided flow.

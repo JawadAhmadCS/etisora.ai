@@ -3,8 +3,53 @@
 //  State machine that handles the full conversation flow
 // ============================================================
 
-const { getFallbackReply, reviewReplyWithContext } = require('./openai');
-const { appendInquiry }    = require('./sheets');
+const isNodeRuntime = typeof module !== 'undefined' && module.exports;
+
+let getFallbackReply;
+let reviewReplyWithContext;
+let appendInquiry;
+
+if (isNodeRuntime) {
+  ({ getFallbackReply, reviewReplyWithContext } = require('./openai'));
+  ({ appendInquiry } = require('./sheets'));
+} else {
+  getFallbackReply = async function browserFallbackReply(userMessage) {
+    const lc = String(userMessage || '').toLowerCase();
+    if (lc.includes('cake')) {
+      return 'Awesome, cake is always a good topic. For Etisora help, I can route you to the right team from here.';
+    }
+    if (lc.includes('pricing')) {
+      return 'Our pricing starts from $997/month for the Starter plan and $2,497/month for the Growth plan. Full details are at etisora.ai/#pricing.';
+    }
+    if (lc.includes('service') || lc.includes('chatbot') || lc.includes('automation')) {
+      return 'We help with AI chatbots, voice agents, lead generation, paid ad campaigns, WhatsApp automation, and customer journey mapping.';
+    }
+    return 'Awesome, thanks for sharing. I can help route you to the right Etisora team.';
+  };
+
+  reviewReplyWithContext = async function browserReviewReply({ draftReply }) {
+    return draftReply;
+  };
+
+  appendInquiry = async function browserAppendInquiry(session) {
+    try {
+      const inquiries = JSON.parse(localStorage.getItem('etisora_chat_inquiries') || '[]');
+      inquiries.push({
+        at: new Date().toISOString(),
+        name: session.name || '',
+        email: session.email || '',
+        phone: session.phone || '',
+        description: session.description || '',
+        preferredTime: session.preferredTime || '',
+        contactMethod: session.contactMethod || '',
+      });
+      localStorage.setItem('etisora_chat_inquiries', JSON.stringify(inquiries.slice(-25)));
+    } catch (_err) {
+      // Browser fallback should never break the visitor chat.
+    }
+    return session.supportType === 'tech_support' ? 'Technical Support' : 'Sales';
+  };
+}
 
 // ── CONVERSATION STATES ──────────────────────────────────────
 const STATES = {
@@ -786,4 +831,10 @@ async function processMessageWithAI(userInput, session) {
   return finalReply;
 }
 
-module.exports = { processMessage: processMessageWithAI, createSession, STATES, MSG };
+const EtisoraChatbot = { processMessage: processMessageWithAI, createSession, STATES, MSG };
+
+if (isNodeRuntime) {
+  module.exports = EtisoraChatbot;
+} else if (typeof window !== 'undefined') {
+  window.EtisoraChatbot = EtisoraChatbot;
+}

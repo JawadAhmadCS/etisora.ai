@@ -1,0 +1,5 @@
+---
+deployment:
+tasks:
+- export DEPLOYPATH=/home/tqxvemji/public_html/
+- /bin/rsync -av --exclude='.git' --exclude='.github' --exclude='.cpanel.yml' --exclude='node_modules' --exclude='.env' ./ $DEPLOYPATH

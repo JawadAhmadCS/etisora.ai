@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "node dev-server.js",
-    "start": "node dev-server.js"
+    "start": "node dev-server.js",
+    "deploy": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

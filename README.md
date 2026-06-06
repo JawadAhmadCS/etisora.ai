@@ -17,6 +17,15 @@ npm run dev
 4. Open in browser:
 `http://localhost:3000`
 
+## Deploy
+Commit local changes, push to GitHub, and push to the Namecheap git remote:
+
+```powershell
+npm run deploy -- "your commit message"
+```
+
+If you do not provide a message, the script creates a timestamped deploy commit.
+
 ## Environment Setup (Required for full chatbot)
 Create `.env` file in project root:
 
